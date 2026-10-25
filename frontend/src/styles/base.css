@@ -1,0 +1,64 @@
+:root {
+  --navy: #0f1f3d;
+  --navy-2: #1a2d52;
+  --ink: #111827;
+  --text: #344054;
+  --muted: #5b6475;
+  --line: #e5e7eb;
+  --line-2: #eef0f3;
+  --bg: #ffffff;
+  --bg-soft: #f5f6f8;
+  --bg-tint: #eef3ff;
+  --blue: #2f5bea;
+  --blue-soft: #e8eeff;
+  --lime: #c8f169;
+  --lime-dark: #9fcc35;
+  --green: #0f7a3d; /* darkened for readable text contrast */
+  --green-soft: #e7f7ee;
+  --pink: #b42d62;
+  --pink-soft: #fdecf3;
+  --red: #d92d20;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 4px 16px rgba(16, 24, 40, 0.06);
+  --font: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { color: var(--ink); margin: 0; line-height: 1.15; letter-spacing: -0.02em; }
+p { margin: 0; }
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; }
+img { display: block; max-width: 100%; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+.container { width: 100%; max-width: 1240px; margin: 0 auto; padding: 0 16px; }
+@media (min-width: 768px) { .container { padding: 0 24px; } }
+
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.hide-sm { display: none; }
+@media (min-width: 640px) { .hide-sm { display: inline; } }
+
+/* ---------- Accessibility ---------- */
+.skip-link {
+  position: absolute; left: 16px; top: -60px; z-index: 100;
+  padding: 10px 16px; border-radius: 10px; background: var(--navy); color: #fff; font-weight: 700;
+}
+.skip-link:focus { top: 12px; }
+main:focus { outline: none; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}

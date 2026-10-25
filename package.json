@@ -1,0 +1,15 @@
+{
+  "name": "qoshni",
+  "private": true,
+  "description": "Qo'shni — roommate and room finder for Uzbekistan. A Mir2Dos product.",
+  "scripts": {
+    "setup": "npm install --prefix frontend && npm install --prefix backend && node scripts/setup-env.mjs",
+    "dev": "node scripts/dev.mjs",
+    "build": "npm run build --prefix frontend && npm run build --prefix backend",
+    "test": "npm test --prefix backend",
+    "typecheck": "npm run typecheck --prefix frontend && npm run typecheck --prefix backend"
+  },
+  "engines": {
+    "node": ">=20.6"
+  }
+}
