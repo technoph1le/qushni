@@ -1,5 +1,5 @@
 import { createHash, randomInt, timingSafeEqual } from 'node:crypto';
-import { botText, tg, type Lang } from './telegram.js';
+import { botText, tg, type Lang } from './telegram';
 
 /** Codes are stored only as a hash bound to their login token. */
 export const hashCode = (token: string, code: string) => createHash('sha256').update(`${token}:${code}`).digest('hex');

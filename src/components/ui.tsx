@@ -1,5 +1,7 @@
+'use client';
+
 import { useState, type ReactNode, type SelectHTMLAttributes } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { LANGS, useI18n } from '../i18n';
 import { cx } from '../lib/utils';
 import { Icon } from './Icon';
@@ -7,7 +9,7 @@ import { Icon } from './Icon';
 export function Logo({ light }: { light?: boolean }) {
   const { t } = useI18n();
   return (
-    <Link to="/" className={cx('logo', light && 'logo--light')} aria-label="Qo'shni">
+    <Link href="/" className={cx('logo', light && 'logo--light')} aria-label="Qo'shni">
       <svg width="34" height="34" viewBox="0 0 32 32" aria-hidden="true">
         <rect width="32" height="32" rx="9" fill={light ? '#c8f169' : '#0f1f3d'} />
         <rect x="8" y="9" width="6" height="14" rx="2" fill={light ? '#0f1f3d' : '#c8f169'} />

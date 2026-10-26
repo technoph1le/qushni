@@ -1,110 +1,93 @@
 # Deployment
 
-Production setup: **website on Vercel**, **backend on Railway**, **database on Supabase**. The domain used below is `qoshni.uz`; replace it with yours everywhere.
+Qo'shni is one Next.js app on **Vercel**: the website and its API (`/api/…` for Telegram sign-in and payments) deploy together. **Supabase** holds the database, photos and Google sign-in. There is no separate backend server.
 
-```
-https://qoshni.uz        → Vercel   (frontend/)
-https://api.qoshni.uz    → Railway  (backend/)
-Supabase project         → database, photos, Google sign-in
-```
-
-Do the sections in order: each one uses values from the one before.
+The domain used below is `qoshni.uz`; replace it with yours everywhere.
 
 ---
 
 ## 0. Before you start
 
+- [ ] **Plans:** Vercel **Pro** (the free Hobby plan is for non-commercial use only), Supabase **Pro** (free projects pause after a week of inactivity and have no backups).
 - [ ] **Domain** bought from an accredited `.uz` registrar ([cctld.uz](https://cctld.uz) lists them).
-- [ ] **Plans:** Supabase **Pro** (free projects pause after a week of inactivity and have no backups), Railway **Pro** (team workspace), Vercel **Pro** (the free plan is for non-commercial use only).
-- [ ] **Contacts on the site:** set the real support email and Telegram handle in [`frontend/src/config.ts`](../frontend/src/config.ts) → `COMPANY`. They appear in the footer, privacy policy and terms. Create that mailbox and Telegram account if they don't exist yet.
-- [ ] **Production Telegram bot:** the real bot (e.g. `@qoshni_bot`) is used only in production. Everyone develops with their own dev bot ([SETUP.md](SETUP.md) step 3).
-- [ ] **Code on GitHub** in a **private** repository. Check that `git status` never lists a `.env` file.
+- [ ] **Contacts on the site:** set the real support email and Telegram handle in [`src/config.ts`](../src/config.ts) → `COMPANY`. They appear in the footer, privacy policy and terms.
+- [ ] **Production Telegram bot:** the real bot (e.g. `@qoshni_bot`) is used only on Vercel. Everyone develops with their own dev bot ([SETUP.md](SETUP.md) step 3).
+- [ ] **Code on GitHub** in a **private** repository. `.env.local` is git-ignored; check that `git status` never lists it.
 
 ## 1. Supabase
 
-1. If this is a new project, run every file in [`supabase/migrations/`](../supabase/migrations/) in order (SQL Editor → New query → paste → Run).
+1. Run every file in [`supabase/migrations/`](../supabase/migrations/) that isn't applied yet, in order (SQL Editor → New query → paste → Run). **The newest one, `20261026000000_rate_limits.sql`, is new with the Next.js version — run it now.**
 2. **Authentication → URL Configuration**
    - **Site URL:** `https://qoshni.uz`
    - **Redirect URLs:** `https://qoshni.uz/**`, `https://www.qoshni.uz/**`. Keep `http://localhost:5173/**` and `https://*.trycloudflare.com/**` for development.
-3. **Authentication → Sign In / Providers → Google:** already set up; no change.
-4. **Advisors → Security Advisor** will warn that `public_listings` is a "security definer view". This is intentional: that view is how the public sees listings *without* addresses or phone numbers. Ignore this one warning.
-5. Delete test data: **Table Editor → listings**, and **Authentication → Users**.
+3. **Advisors → Security Advisor** will warn that `public_listings` is a "security definer view". This is intentional: that view is how the public sees listings *without* addresses or phone numbers.
+4. Before launch, delete test data: **Table Editor → listings**, and **Authentication → Users**.
 
-## 2. Backend → Railway
+## 2. Vercel
 
-1. [railway.com](https://railway.com) → **New Project → Deploy from GitHub repo** → choose the repository.
-2. Service **Settings**:
+### Project settings (once)
+
+Vercel → your project → **Settings**:
 
 | Setting | Value |
 | --- | --- |
-| Root Directory | `backend` |
-| Builder | Dockerfile (detected automatically) |
-| Region | **EU West (Amsterdam)**, close to Supabase in Frankfurt |
-| Healthcheck Path | `/health` |
+| Build & Deployment → **Framework Preset** | **Next.js** |
+| Build & Deployment → **Root Directory** | **empty** (the repository root). If it still says `frontend`, clear it. |
+| Build & Deployment → Node.js Version | 20.x or newer |
+| Functions → **Function Region** | **Frankfurt (fra1)**, next to Supabase |
 
-3. **Variables:** add these. Don't add `PORT`; Railway sets it.
+### Environment variables
 
-| Variable | Value |
-| --- | --- |
-| `FRONTEND_URL` | `https://qoshni.uz,https://www.qoshni.uz` |
-| `PUBLIC_API_URL` | `https://api.qoshni.uz` |
-| `SUPABASE_URL` | from your local `backend/.env` |
-| `SUPABASE_SERVICE_ROLE_KEY` | from your local `backend/.env` (the secret key) |
-| `TELEGRAM_BOT_TOKEN` | the **production** bot's token |
-| `TELEGRAM_BOT_USERNAME` | the production bot's username, without @ |
-| `TELEGRAM_WEBHOOK_SECRET` | any long random string; keep a copy for step 5 |
-| `PAYME_*`, `CLICK_*` | leave out until payments start (section 6) |
+**Settings → Environment Variables.** The **Supabase integration** (Integrations → Supabase → connect the **same** project) already adds `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` / `SUPABASE_SECRET_KEY`. Add the rest:
 
-4. **Settings → Networking → Custom Domain:** `api.qoshni.uz`. Add the CNAME record Railway shows at your domain registrar.
-5. When `https://api.qoshni.uz/health` shows `{"ok":true}`, point the production bot at it. From the `backend` folder in Git Bash:
-   ```bash
-   TELEGRAM_BOT_TOKEN=<production token> TELEGRAM_WEBHOOK_SECRET=<same as Railway> PUBLIC_API_URL=https://api.qoshni.uz npm run telegram:webhook
-   ```
-   Expected output: `Webhook was set`.
+| Variable | Value | Notes |
+| --- | --- | --- |
+| `TELEGRAM_BOT_TOKEN` | production bot token | mark **Sensitive** |
+| `TELEGRAM_BOT_USERNAME` | production bot username, without @ | |
+| `TELEGRAM_WEBHOOK_SECRET` | a long random string (e.g. a password generator, letters and digits only) | mark **Sensitive**; keep a copy for step 4 |
+| `NEXT_PUBLIC_SITE_URL` | `https://qoshni.uz` | optional; without it Vercel's domain is used for link previews |
+| `PAYME_*`, `CLICK_*` | — | only when payments start (section 5) |
 
-Every push to the main branch redeploys automatically. **Deployments** shows logs and has one-click rollback.
+Leftover `VITE_*` variables from the earlier version can be deleted.
 
-## 3. Website → Vercel
+Variables take effect on the next deploy: **Deployments → ⋯ → Redeploy**.
 
-1. [vercel.com](https://vercel.com) → **Add New → Project** → import the repository.
-2. **Root Directory:** `frontend`. The build settings come from [`frontend/vercel.json`](../frontend/vercel.json).
-3. **Environment Variables** (Production):
+### Domain
 
-| Variable | Value |
-| --- | --- |
-| `VITE_SUPABASE_URL` | from your local `frontend/.env` |
-| `VITE_SUPABASE_ANON_KEY` | from your local `frontend/.env` (publishable key) |
-| `VITE_API_URL` | `https://api.qoshni.uz` |
-| `VITE_SITE_URL` | `https://qoshni.uz` |
+**Settings → Domains** → add `qoshni.uz` and `www.qoshni.uz`, then add the DNS records Vercel shows at your registrar.
 
-4. **Deploy**, then **Settings → Domains**: add `qoshni.uz` and `www.qoshni.uz`, and the DNS records Vercel shows.
-
-If a variable is missing, the live site shows "Configuration error" instead of demo data. Add the variable and **Redeploy**.
-
-## 4. Google Cloud Console
+## 3. Google Cloud Console
 
 Open your OAuth client:
 - **Authorized JavaScript origins:** add `https://qoshni.uz` and `https://www.qoshni.uz`. Keep `http://localhost:5173`.
-- **Authorized redirect URIs:** no change.
+- **Authorized redirect URIs:** no change (it points to Supabase).
 
-**Google Auth Platform → Branding:**
-- App home page: `https://qoshni.uz`
-- Privacy policy: `https://qoshni.uz/privacy`
-- Terms of service: `https://qoshni.uz/terms`
-- Authorized domains: `qoshni.uz`
+**Google Auth Platform → Branding:** home page `https://qoshni.uz`, privacy policy `https://qoshni.uz/privacy`, terms of service `https://qoshni.uz/terms`, authorized domain `qoshni.uz`.
 
-**Audience:** make sure the app is **In production**, not *Testing*.
+**Audience:** the app must be **In production**, not *Testing*.
+
+## 4. Point the production bot at the site
+
+After the first deploy with the Telegram variables, run this from your computer in the project folder (Git Bash):
+
+```bash
+TELEGRAM_BOT_TOKEN=<production token> TELEGRAM_WEBHOOK_SECRET=<same as on Vercel> npm run telegram:webhook -- https://qoshni.uz
+```
+
+Expected: `Webhook was set`. The bot now sends messages to `https://qoshni.uz/api/telegram/webhook`.
 
 ## 5. Test the live site
 
-- [ ] `https://qoshni.uz` loads and shows listings; the browser tab shows the Qo'shni icon.
+- [ ] `https://qoshni.uz` shows listings; the browser tab shows the Qo'shni icon.
+- [ ] `https://qoshni.uz/api/health` shows `{"ok":true}`.
 - [ ] Google sign-in works and returns to the site.
 - [ ] Phone sign-in: the code comes from the **production** bot.
 - [ ] Post a room with photos, check it on the home page, then delete it.
-- [ ] `/privacy` and `/terms` open in all three languages.
-- [ ] Open the site on a phone; "Add to Home Screen" shows the Qo'shni icon.
-- [ ] Share the link in Telegram: the preview shows the Qo'shni image.
-- [ ] Set up an uptime monitor (e.g. UptimeRobot, free) on `https://api.qoshni.uz/health`.
+- [ ] Share a listing link in Telegram: the preview shows that room's photo, title and price.
+- [ ] `/privacy` and `/terms` open; `/sitemap.xml` lists the rooms.
+- [ ] Set up a free uptime monitor (e.g. UptimeRobot) on `https://qoshni.uz/api/health`.
+
+Every push to the main branch redeploys automatically; **Deployments** has logs and one-click rollback. API errors appear under **Logs**.
 
 ## 6. When payments start
 
@@ -112,16 +95,16 @@ Requires a registered business and a merchant contract.
 
 | | Payme Business | Click |
 | --- | --- | --- |
-| Endpoint to give them | `https://api.qoshni.uz/payments/payme` | `https://api.qoshni.uz/payments/click/prepare` and `/payments/click/complete` |
+| Endpoint to give them | `https://qoshni.uz/api/payments/payme` | `https://qoshni.uz/api/payments/click/prepare` and `/api/payments/click/complete` |
 | Account field | `order_id` | `merchant_trans_id` = order number |
-| Railway variables | `PAYME_MERCHANT_ID`, `PAYME_KEY`, `PAYME_TEST_MODE=true` (then `false` with the live key) | `CLICK_SERVICE_ID`, `CLICK_MERCHANT_ID`, `CLICK_SECRET_KEY` |
+| Vercel variables | `PAYME_MERCHANT_ID`, `PAYME_KEY`, `PAYME_TEST_MODE=true` (then `false` with the live key) | `CLICK_SERVICE_ID`, `CLICK_MERCHANT_ID`, `CLICK_SECRET_KEY` |
 
-Then switch paid mode on in the Supabase SQL Editor:
+Redeploy, then switch paid mode on in the Supabase SQL Editor:
 ```sql
 update app_settings set paywall_enabled = true;
 ```
 
 ## Still open (planned after funding)
 
-- Lawyer-reviewed privacy policy and terms. The current launch texts live in `frontend/src/content/legal.ts`.
+- Lawyer-reviewed privacy policy and terms; the launch texts live in `src/content/legal.ts`.
 - Personal data storage location: Uzbek law requires citizens' data on servers in Uzbekistan. Supabase can be self-hosted there without code changes.

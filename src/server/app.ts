@@ -1,42 +1,30 @@
-import { serve } from '@hono/node-server';
+import 'server-only';
 import { Hono } from 'hono';
-import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import { secureHeaders } from 'hono/secure-headers';
-import { env } from './env.js';
-import { rateLimit } from './lib/rateLimit.js';
-import { auth } from './routes/auth.js';
-import { payments } from './routes/payments.js';
-import { telegramWebhook } from './routes/telegramWebhook.js';
+import { rateLimit } from './lib/rateLimit';
+import { auth } from './routes/auth';
+import { payments } from './routes/payments';
+import { telegramWebhook } from './routes/telegramWebhook';
 
-const app = new Hono();
-const TEN_MIN = 10 * 60 * 1000;
+/** Everything under /api — served by src/app/api/[[...route]]/route.ts. */
+export const api = new Hono().basePath('/api');
+const TEN_MIN = 10 * 60;
 
 // Login tokens must not end up in hosting logs.
-app.use('*', logger((line) => console.log(line.replace(/\/status\/[^\s?]+/, '/status/***'))));
-app.use('*', secureHeaders());
+api.use('*', logger((line) => console.log(line.replace(/\/status\/[^\s?]+/, '/status/***'))));
 
-const browserCors = cors({ origin: env.frontendUrls, allowHeaders: ['content-type', 'authorization'] });
-app.use('/auth/*', browserCors);
-app.use('/payments/orders', browserCors);
-app.use('/payments/providers', browserCors);
+api.use('/auth/telegram/start', rateLimit('start', { windowSeconds: TEN_MIN, max: 10 }));
+api.use('/auth/telegram/verify', rateLimit('verify', { windowSeconds: TEN_MIN, max: 20 }));
+api.use('/auth/telegram/status/*', rateLimit('status', { windowSeconds: TEN_MIN, max: 400 }));
+api.use('/payments/orders', rateLimit('orders', { windowSeconds: TEN_MIN, max: 20 }));
 
-app.use('/auth/telegram/start', rateLimit({ windowMs: TEN_MIN, max: 10 }));
-app.use('/auth/telegram/verify', rateLimit({ windowMs: TEN_MIN, max: 20 }));
-app.use('/auth/telegram/status/*', rateLimit({ windowMs: TEN_MIN, max: 400 }));
-app.use('/payments/orders', rateLimit({ windowMs: TEN_MIN, max: 20 }));
+api.get('/health', (c) => c.json({ ok: true }));
+api.route('/auth', auth);
+api.route('/telegram/webhook', telegramWebhook);
+api.route('/payments', payments);
 
-app.get('/health', (c) => c.json({ ok: true }));
-app.route('/auth', auth);
-app.route('/telegram/webhook', telegramWebhook);
-app.route('/payments', payments);
-
-app.notFound((c) => c.json({ error: 'not_found' }, 404));
-app.onError((err, c) => {
+api.notFound((c) => c.json({ error: 'not_found' }, 404));
+api.onError((err, c) => {
   console.error(err);
   return c.json({ error: 'internal' }, 500);
-});
-
-serve({ fetch: app.fetch, port: env.port }, (info) => {
-  console.log(`Qo'shni API listening on port ${info.port}`);
 });

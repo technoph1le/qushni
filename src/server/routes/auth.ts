@@ -1,10 +1,10 @@
 import { randomBytes } from 'node:crypto';
 import { Hono } from 'hono';
-import { env } from '../env.js';
-import { normalizePhone } from '../lib/phone.js';
-import { db, userFromRequest } from '../lib/supabase.js';
-import { hashCode, sameHash, sendCode } from '../lib/loginCode.js';
-import { pickLang } from '../lib/telegram.js';
+import { env } from '../env';
+import { normalizePhone } from '../lib/phone';
+import { db, userFromRequest } from '../lib/supabase';
+import { hashCode, sameHash, sendCode } from '../lib/loginCode';
+import { pickLang } from '../lib/telegram';
 
 const MAX_ATTEMPTS = 5;
 const RESEND_SECONDS = 60;
@@ -22,7 +22,9 @@ auth.post('/telegram/start', async (c) => {
   const user = await userFromRequest(c);
 
   // Housekeeping: old login attempts are useless after they expire.
-  await db.from('telegram_logins').delete().lt('expires_at', new Date(Date.now() - 86_400_000).toISOString());
+  const dayAgo = new Date(Date.now() - 86_400_000).toISOString();
+  await db.from('telegram_logins').delete().lt('expires_at', dayAgo);
+  await db.from('rate_limits').delete().lt('window_start', dayAgo);
 
   const { data: recent } = await db
     .from('telegram_logins')

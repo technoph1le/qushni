@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
 import { Icon } from '../components/Icon';
 import { useListings } from '../data/useListings';
 import { ListingCard } from '../features/listings/ListingCard';
@@ -22,7 +24,7 @@ export function SavedPage() {
             <Icon name="heart" size={28} />
             <strong>{t('saved.empty')}</strong>
             <span className="muted">{t('saved.emptyHint')}</span>
-            <Link to="/#listings" className="btn btn--dark">{t('nav.listings')}</Link>
+            <Link href="/#listings" className="btn btn--dark">{t('nav.listings')}</Link>
           </div>
         ) : (
           <div className="grid grid--3">

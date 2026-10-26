@@ -1,5 +1,8 @@
+'use client';
+
 import { useEffect, useState } from 'react';
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../features/auth/AuthProvider';
 import { Icon } from '../components/Icon';
 import { PhoneVerify } from '../features/auth/PhoneVerify';
@@ -22,16 +25,18 @@ function oauthError() {
 export function LoginPage() {
   const { t, tx } = useI18n();
   const { user, ready, signInWithGoogle } = useAuth();
-  const [params] = useSearchParams();
-  const navigate = useNavigate();
+  const params = useSearchParams();
+  const router = useRouter();
   const next = safeNext(params.get('next'));
-  const [error, setError] = useState(() => oauthError());
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    setError(oauthError());
   }, []);
 
-  if (ready && user) return <Navigate to={next} replace />;
+  useEffect(() => {
+    if (ready && user) router.replace(next);
+  }, [ready, user, next, router]);
 
   return (
     <main id="main" className="auth-page">
@@ -53,12 +58,12 @@ export function LoginPage() {
 
         <div className="divider"><span>{t('auth.or')}</span></div>
 
-        <PhoneVerify onDone={() => navigate(next, { replace: true })} />
+        <PhoneVerify onDone={() => router.replace(next)} />
         {error && <p className="form__error" role="alert"><Icon name="info" size={16} />{error}</p>}
         <p className="auth-card__legal">
           {tx('auth.agree', {
-            terms: <Link to="/terms">{t('auth.agreeTerms')}</Link>,
-            privacy: <Link to="/privacy">{t('auth.agreePrivacy')}</Link>,
+            terms: <Link href="/terms">{t('auth.agreeTerms')}</Link>,
+            privacy: <Link href="/privacy">{t('auth.agreePrivacy')}</Link>,
           })}
         </p>
       </div>

@@ -1,5 +1,7 @@
+'use client';
+
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import Link from 'next/link';
 import { useAuth } from '../features/auth/AuthProvider';
 import { Icon, type IconName } from '../components/Icon';
 import { PayModal, PlanOptions } from '../features/payments/Plans';
@@ -25,14 +27,13 @@ const AMENITY_ICON: Partial<Record<Amenity, IconName>> = {
   security: 'shield',
 };
 
-export function ListingPage() {
-  const { id = '' } = useParams();
+export function ListingPage({ id, initialListing }: { id: string; initialListing: Listing | null }) {
   const { t, lt, lang, money, date, num } = useI18n();
   const { access } = useAuth();
   const { listings, loading } = useListings();
   const cached = listings.find((l) => l.id === id);
   const [fetched, setFetched] = useState<Listing | null | undefined>(undefined);
-  const listing = cached ?? fetched ?? null;
+  const listing = cached ?? fetched ?? initialListing;
   const saved = useStore((s) => s.favorites.includes(id));
   const [photo, setPhoto] = useState(0);
   const [location, setLocation] = useState<ListingLocation | null>(null);
@@ -49,10 +50,10 @@ export function ListingPage() {
 
   // Not in the public catalogue (e.g. the owner's paused listing) — ask directly.
   useEffect(() => {
-    if (!loading && !cached && fetched === undefined) {
+    if (!loading && !cached && !initialListing && fetched === undefined) {
       repo.getListing(id).then(setFetched).catch(() => setFetched(null));
     }
-  }, [loading, cached, fetched, id]);
+  }, [loading, cached, initialListing, fetched, id]);
 
   useEffect(() => {
     setLocation(null);
@@ -68,7 +69,7 @@ export function ListingPage() {
     return (
       <div className="container page-empty">
         <h1>{t('detail.notFound')}</h1>
-        <Link to="/" className="btn btn--dark">{t('detail.back')}</Link>
+        <Link href="/" className="btn btn--dark">{t('detail.back')}</Link>
       </div>
     );
   }
@@ -96,7 +97,7 @@ export function ListingPage() {
 
   return (
     <div className="container detail">
-      <Link to="/#listings" className="back-link">
+      <Link href="/#listings" className="back-link">
         <Icon name="chevronLeft" size={16} />
         {t('detail.back')}
       </Link>

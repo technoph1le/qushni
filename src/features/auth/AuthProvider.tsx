@@ -1,8 +1,10 @@
+'use client';
+
 import type { Session } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { repo, type Access } from '../../data/repo';
-import { apiFetch, DEMO, supabase } from '../../lib/supabase';
-import { getState, setState, useStore } from '../../lib/store';
+import { useStore } from '../../lib/store';
+import { apiFetch, supabase } from '../../lib/supabase';
 import type { Lang } from '../../types';
 
 export interface AppUser {
@@ -52,10 +54,9 @@ async function loadProfile(session: Session): Promise<AppUser> {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [ready, setReady] = useState(DEMO);
-  const [sbUser, setSbUser] = useState<AppUser | null>(null);
+  const [ready, setReady] = useState(false);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [access, setAccess] = useState<Access>({ paywall: false, accessUntil: null });
-  const demoUser = useStore((s) => s.demoUser);
   const preview = useStore((s) => s.paywallPreview);
 
   useEffect(() => {
@@ -64,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const apply = async (session: Session | null) => {
       const u = session ? await loadProfile(session).catch(() => null) : null;
       if (alive) {
-        setSbUser(u);
+        setUser(u);
         setReady(true);
       }
     };
@@ -77,11 +78,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sub.subscription.unsubscribe();
     };
   }, []);
-
-  const user = useMemo<AppUser | null>(
-    () => (DEMO ? demoUser && { ...demoUser, phoneVerified: !!demoUser.phone, avatar: null } : sbUser),
-    [demoUser, sbUser],
-  );
 
   const refreshAccess = useCallback(async () => {
     try {
@@ -98,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshProfile = useCallback(async () => {
     if (!supabase) return;
     const { data } = await supabase.auth.getSession();
-    if (data.session) setSbUser(await loadProfile(data.session));
+    if (data.session) setUser(await loadProfile(data.session));
   }, []);
 
   const value = useMemo<AuthContext>(() => {
@@ -111,10 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refreshAccess,
 
       async signInWithGoogle(next) {
-        if (!supabase) {
-          setState({ demoUser: { id: 'demo-user', name: 'Aziza', email: 'aziza@gmail.com', phone: getState().demoUser?.phone ?? null } });
-          return;
-        }
+        if (!supabase) return;
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           // Come back to /login so an OAuth error can be shown there; on success it forwards to `next`.
@@ -124,23 +117,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
 
       async startPhone(phone, lang) {
-        if (DEMO) return { token: `demo:${phone}`, mode: 'code_sent' };
         return apiFetch<PhoneStart>('/auth/telegram/start', { body: { phone, lang } });
       },
 
       async phoneStatus(token) {
-        if (DEMO) return 'code_sent';
         const res = await apiFetch<{ status: 'pending' | 'code_sent' | 'expired' }>(`/auth/telegram/status/${encodeURIComponent(token)}`);
         return res.status;
       },
 
       async verifyCode(token, code) {
-        if (DEMO) {
-          const phone = token.slice('demo:'.length);
-          const cur = getState().demoUser;
-          setState({ demoUser: cur ? { ...cur, phone } : { id: 'demo-user', name: '', email: null, phone } });
-          return cur ? 'linked' : 'signed_in';
-        }
         const res = await apiFetch<{ status: 'signed_in' | 'linked'; token_hash?: string }>('/auth/telegram/verify', {
           body: { token, code },
         });
@@ -154,23 +139,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
 
       async updateName(name) {
-        if (!supabase) {
-          const cur = getState().demoUser;
-          if (cur) setState({ demoUser: { ...cur, name } });
-          return;
-        }
-        if (!user) return;
+        if (!supabase || !user) return;
         const { error } = await supabase.from('profiles').update({ full_name: name }).eq('id', user.id);
         if (error) throw error;
         await refreshProfile();
       },
 
       async signOut() {
-        if (!supabase) {
-          setState({ demoUser: null });
-          return;
-        }
-        await supabase.auth.signOut();
+        await supabase?.auth.signOut();
       },
     };
   }, [ready, user, access, preview, refreshAccess, refreshProfile]);

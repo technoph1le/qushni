@@ -1,5 +1,8 @@
+'use client';
+
 import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '../features/auth/AuthProvider';
 import { Icon } from '../components/Icon';
 import { useI18n } from '../i18n';
@@ -14,7 +17,7 @@ const MAX_POLLS = 40;
 export function PaymentReturnPage() {
   const { t, date } = useI18n();
   const { refreshAccess, access } = useAuth();
-  const [params] = useSearchParams();
+  const params = useSearchParams();
   const orderId = Number(params.get('order'));
   const [status, setStatus] = useState<Status>('pending');
 
@@ -56,7 +59,7 @@ export function PaymentReturnPage() {
           ? t('payret.paid.d', { d: access.accessUntil ? date(access.accessUntil.slice(0, 10)) : '…' })
           : t(`payret.${status}.d`)}
       </p>
-      <Link to="/#listings" className="btn btn--dark">{t('payret.cta')}</Link>
+      <Link href="/#listings" className="btn btn--dark">{t('payret.cta')}</Link>
     </div>
   );
 }

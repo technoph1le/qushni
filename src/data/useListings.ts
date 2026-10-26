@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useReducer } from 'react';
 import type { Listing } from '../types';
 import { repo } from './repo';
@@ -26,7 +28,8 @@ export function reloadListings() {
   return inflight;
 }
 
-export function useListings() {
+/** `initial` is the list rendered on the server; it is shown until the browser has fetched its own copy. */
+export function useListings(initial?: Listing[]) {
   const [, rerender] = useReducer((x: number) => x + 1, 0);
   useEffect(() => {
     subscribers.add(rerender);
@@ -35,5 +38,5 @@ export function useListings() {
       subscribers.delete(rerender);
     };
   }, []);
-  return { listings: cache ?? [], loading: cache === null, failed };
+  return { listings: cache ?? initial ?? [], loading: cache === null && !initial, failed };
 }

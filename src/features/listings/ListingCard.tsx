@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
 import { cityName, districtName } from '../../data/places';
 import { useI18n } from '../../i18n';
 import { actions, useStore } from '../../lib/store';
@@ -15,7 +17,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
 
   return (
     <article className="card">
-      <Link to={`/listing/${listing.id}`} className="card__media">
+      <Link href={`/listing/${listing.id}`} className="card__media">
         <Photo src={listing.photos[0]} alt={title} />
         <span className="card__city">{cityName(listing.city, lang)}</span>
         <span className="card__spots">{t('card.spots', { n: listing.spots })}</span>
@@ -36,7 +38,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
           </span>
           <span className={cx('tag', `tag--${listing.gender}`)}>{t(`gender.${listing.gender}`)}</span>
         </div>
-        <Link to={`/listing/${listing.id}`} className="card__title">
+        <Link href={`/listing/${listing.id}`} className="card__title">
           {title}
         </Link>
 
@@ -86,7 +88,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
             <div className="price">{money(listing.price)}</div>
             <small className="muted">{t('card.perMonth')}</small>
           </div>
-          <Link to={`/listing/${listing.id}`} className="btn btn--outline btn--sm" aria-label={title}>
+          <Link href={`/listing/${listing.id}`} className="btn btn--outline btn--sm" aria-label={title}>
             <Icon name="arrowRight" size={16} />
           </Link>
         </div>

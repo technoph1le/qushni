@@ -1,4 +1,4 @@
-import { db } from '../lib/supabase.js';
+import { db } from '../lib/supabase';
 
 export interface Order {
   id: number;

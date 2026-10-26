@@ -158,11 +158,9 @@ export const uz: Dict = {
   'detail.m2': '{n} m²',
 
   'pay.title': 'Kontaktlarga kirish',
-  'pay.lead': "Demo to'lov — haqiqiy pul yechilmaydi.",
   'pay.method': "To'lov usuli",
   'pay.confirm': "{v} to'lash",
   'pay.close': 'Yopish',
-  'pay.done': 'Kirish faollashtirildi',
 
   'dash.overview': 'Umumiy',
   'dash.listings': "E'lonlarim",
@@ -189,7 +187,6 @@ export const uz: Dict = {
   'dash.confirmDelete': "Bu e'lonni o'chirasizmi?",
   'dash.tip.t': 'Maslahat',
   'dash.tip.d': "4 tadan ko'p rasm va sheriklar haqida ma'lumot bor e'lonlarga taxminan 3 barobar ko'p qo'ng'iroq qilishadi.",
-  'dash.demoNote': "Demo rejim: e'lonlaringiz faqat shu brauzerda saqlanadi.",
 
 
   'prof.name': 'Ism',
@@ -281,7 +278,6 @@ export const uz: Dict = {
   'auth.err.generic': "Xatolik yuz berdi. Qaytadan urinib ko'ring.",
   'auth.signIn': 'Kirish',
   'auth.signOut': 'Chiqish',
-  'auth.demo': "Demo rejim: Supabase ulanmagan, istalgan 6 xonali kod ishlaydi.",
   'verify.t': 'Telefon raqamingizni tasdiqlang',
   'verify.d': "Qo'shni xavfsiz bo'lishi uchun faqat raqami tasdiqlangan foydalanuvchilar e'lon bera oladi. Bu bir daqiqa oladi.",
   'prof.email': 'Email',

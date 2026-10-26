@@ -1,3 +1,5 @@
+'use client';
+
 import { Icon } from '../../components/Icon';
 import { useDialog } from '../../components/useDialog';
 import { useI18n } from '../../i18n';

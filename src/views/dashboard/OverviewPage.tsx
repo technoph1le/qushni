@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
 import { Icon, type IconName } from '../../components/Icon';
 import { useAuth } from '../../features/auth/AuthProvider';
 import { MyListingsTable, PhoneBanner, useMyListings } from '../../features/dashboard/MyListings';
@@ -23,7 +25,7 @@ export function OverviewPage() {
           <h1>{t('dash.hello', { name: user?.name || user?.phone || '' })}</h1>
           <p className="muted">{t('dash.helloLead')}</p>
         </div>
-        <Link to="/dashboard/new" className="btn btn--dark">
+        <Link href="/dashboard/new" className="btn btn--dark">
           <Icon name="plus" size={16} />
           {t('dash.new')}
         </Link>

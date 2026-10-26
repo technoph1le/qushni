@@ -1,5 +1,7 @@
-import { Link } from 'react-router-dom';
-import { COMPANY, PAYWALL_ENABLED } from '../../config';
+'use client';
+
+import Link from 'next/link';
+import { COMPANY } from '../../config';
 import { useI18n } from '../../i18n';
 import { actions, useStore } from '../../lib/store';
 import { Logo } from '../ui';
@@ -18,8 +20,8 @@ export function Footer() {
         </div>
         <nav className="footer__col" aria-label={t('footer.legal')}>
           <strong>{t('footer.legal')}</strong>
-          <Link to="/terms">{t('legal.terms')}</Link>
-          <Link to="/privacy">{t('legal.privacy')}</Link>
+          <Link href="/terms">{t('legal.terms')}</Link>
+          <Link href="/privacy">{t('legal.privacy')}</Link>
         </nav>
         <div className="footer__col">
           <strong>{t('footer.contact')}</strong>
@@ -31,7 +33,7 @@ export function Footer() {
       </div>
       <div className="container footer__bottom">
         <span className="muted small">{t('footer.rights', { year: new Date().getFullYear(), company: COMPANY.name })}</span>
-        {import.meta.env.DEV && !PAYWALL_ENABLED && (
+        {process.env.NODE_ENV === 'development' && (
           <button className="link-btn" onClick={() => actions.setPaywallPreview(!preview)}>
             {preview ? t('footer.paywallOff') : t('footer.paywallPreview')}
           </button>

@@ -156,11 +156,9 @@ export const en = {
   'detail.m2': '{n} m²',
 
   'pay.title': 'Get access to contacts',
-  'pay.lead': 'Demo checkout — no real payment is made.',
   'pay.method': 'Payment method',
   'pay.confirm': 'Pay {v}',
   'pay.close': 'Close',
-  'pay.done': 'Access activated',
 
   'dash.overview': 'Overview',
   'dash.listings': 'My listings',
@@ -187,7 +185,6 @@ export const en = {
   'dash.confirmDelete': 'Delete this listing?',
   'dash.tip.t': 'Tip',
   'dash.tip.d': 'Listings with 4+ photos and housemate info get about 3× more calls.',
-  'dash.demoNote': 'Demo mode: your listings are saved in this browser only.',
 
 
   'prof.name': 'Name',
@@ -279,7 +276,6 @@ export const en = {
   'auth.err.generic': 'Something went wrong. Try again.',
   'auth.signIn': 'Sign in',
   'auth.signOut': 'Sign out',
-  'auth.demo': 'Demo mode: Supabase is not connected, any 6-digit code works.',
   'verify.t': 'Confirm your phone number',
   'verify.d': 'To keep Qo\'shni safe, only people with a confirmed phone number can post rooms. It takes a minute.',
   'prof.email': 'Email',

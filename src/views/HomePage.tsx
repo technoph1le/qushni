@@ -1,5 +1,7 @@
+'use client';
+
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { FiltersDrawer } from '../features/listings/FiltersDrawer';
 import { FiltersPanel } from '../features/listings/FiltersPanel';
 import { Icon } from '../components/Icon';
@@ -7,15 +9,16 @@ import { ListingCard } from '../features/listings/ListingCard';
 import { PayModal, PlanOptions } from '../features/payments/Plans';
 import { Select } from '../components/ui';
 import type { Plan } from '../config';
+import type { Listing } from '../types';
 import { CITIES, cityById } from '../data/places';
 import { activeFilterCount, applyFilters, BUDGET_PRESETS, DEFAULT_FILTERS, PRICE_MAX, type FilterState, type SortKey } from '../features/listings/filters';
 import { useAuth } from '../features/auth/AuthProvider';
 import { useListings } from '../data/useListings';
 import { useI18n } from '../i18n';
 
-export function HomePage() {
+export function HomePage({ initialListings }: { initialListings: Listing[] }) {
   const { t, lang, money, date } = useI18n();
-  const { listings, loading } = useListings();
+  const { listings, loading } = useListings(initialListings);
   const { access: acc } = useAuth();
   const paywall = acc.paywallOn;
   const access = acc.has;
@@ -99,7 +102,7 @@ export function HomePage() {
             <span><Icon name="shield" size={16} />{t('hero.trust1')}</span>
             <span><Icon name="check" size={16} />{t('hero.trust2')}</span>
             <span><Icon name="bolt" size={16} />{t('hero.trust3')}</span>
-            <Link to="/dashboard/new" className="hero__post">
+            <Link href="/dashboard/new" className="hero__post">
               {t('hero.postCta')}
               <Icon name="arrowRight" size={16} />
             </Link>
@@ -187,7 +190,7 @@ export function HomePage() {
             <span className="host-card__icon"><Icon name="home" size={26} /></span>
             <h3>{t('how.host.t')}</h3>
             <p>{t('how.host.d')}</p>
-            <Link to="/dashboard/new" className="btn btn--lime btn--lg">
+            <Link href="/dashboard/new" className="btn btn--lime btn--lg">
               <Icon name="plus" size={18} />
               {t('how.host.cta')}
             </Link>

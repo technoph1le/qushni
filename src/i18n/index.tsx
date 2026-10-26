@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, Fragment, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Lang, LocalizedText } from '../types';
 import { en, type TKey } from './en';
@@ -35,18 +37,10 @@ interface I18n {
 
 const Ctx = createContext<I18n | null>(null);
 
-function initialLang(): Lang {
-  try {
-    const saved = localStorage.getItem('qoshni.lang');
-    if (saved === 'uz' || saved === 'ru' || saved === 'en') return saved;
-  } catch {
-    /* storage unavailable */
-  }
-  const nav = navigator.language.slice(0, 2);
-  return nav === 'ru' ? 'ru' : nav === 'en' ? 'en' : 'uz';
-}
+export const LANG_COOKIE = 'lang';
 
-export function I18nProvider({ children }: { children: ReactNode }) {
+/** `initialLang` comes from the server (cookie or browser language), so server and browser render the same text. */
+export function I18nProvider({ children, initialLang }: { children: ReactNode; initialLang: Lang }) {
   const [lang, setLangState] = useState<Lang>(initialLang);
 
   useEffect(() => {
@@ -55,11 +49,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const setLang = useCallback((l: Lang) => {
     setLangState(l);
-    try {
-      localStorage.setItem('qoshni.lang', l);
-    } catch {
-      /* storage unavailable */
-    }
+    document.cookie = `${LANG_COOKIE}=${l}; path=/; max-age=31536000; samesite=lax`;
   }, []);
 
   const value = useMemo<I18n>(() => {

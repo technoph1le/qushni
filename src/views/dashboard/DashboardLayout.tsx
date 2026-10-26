@@ -1,24 +1,45 @@
-import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '../../features/auth/AuthProvider';
+'use client';
+
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, type ReactNode } from 'react';
 import { Icon, type IconName } from '../../components/Icon';
 import { LangSwitch, Logo } from '../../components/ui';
+import { useAuth } from '../../features/auth/AuthProvider';
 import { useI18n, type TKey } from '../../i18n';
-import { DEMO } from '../../lib/supabase';
+import { cx } from '../../lib/utils';
 
-const NAV: { to: string; icon: IconName; key: TKey; end?: boolean }[] = [
-  { to: '/dashboard', icon: 'grid', key: 'dash.overview', end: true },
-  { to: '/dashboard/listings', icon: 'home', key: 'dash.listings' },
-  { to: '/dashboard/new', icon: 'plus', key: 'dash.new' },
-  { to: '/dashboard/profile', icon: 'user', key: 'dash.profile' },
+const NAV: { href: string; icon: IconName; key: TKey; exact?: boolean }[] = [
+  { href: '/dashboard', icon: 'grid', key: 'dash.overview', exact: true },
+  { href: '/dashboard/listings', icon: 'home', key: 'dash.listings' },
+  { href: '/dashboard/new', icon: 'plus', key: 'dash.new' },
+  { href: '/dashboard/profile', icon: 'user', key: 'dash.profile' },
 ];
 
-export function DashboardLayout() {
+function NavItem({ item, className, iconSize }: { item: (typeof NAV)[number]; className: string; iconSize: number }) {
+  const { t } = useI18n();
+  const pathname = usePathname();
+  const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+  return (
+    <Link href={item.href} className={cx(className, active && 'active')} aria-current={active ? 'page' : undefined}>
+      <Icon name={item.icon} size={iconSize} />
+      <span>{t(item.key)}</span>
+    </Link>
+  );
+}
+
+/** Shell for every /dashboard page. Signed-out visitors are sent to /login and brought back afterwards. */
+export function DashboardLayout({ children }: { children: ReactNode }) {
   const { t } = useI18n();
   const { ready, user, signOut } = useAuth();
-  const location = useLocation();
+  const pathname = usePathname();
+  const router = useRouter();
 
-  if (!ready) return <div className="page-empty"><span className="spinner" /></div>;
-  if (!user) return <Navigate to={`/login?next=${encodeURIComponent(location.pathname)}`} replace />;
+  useEffect(() => {
+    if (ready && !user) router.replace(`/login?next=${encodeURIComponent(pathname)}`);
+  }, [ready, user, pathname, router]);
+
+  if (!ready || !user) return <div className="page-empty"><span className="spinner" /></div>;
 
   return (
     <div className="dash">
@@ -26,15 +47,12 @@ export function DashboardLayout() {
         <Logo />
         <nav className="dash__nav" aria-label={t('a11y.dashNav')}>
           {NAV.map((n) => (
-            <NavLink key={n.to} to={n.to} end={n.end} className="dash__link">
-              <Icon name={n.icon} size={18} />
-              <span>{t(n.key)}</span>
-            </NavLink>
+            <NavItem key={n.href} item={n} className="dash__link" iconSize={18} />
           ))}
         </nav>
         <div className="dash__side-foot">
           <LangSwitch />
-          <Link to="/" className="dash__link">
+          <Link href="/" className="dash__link">
             <Icon name="chevronLeft" size={18} />
             <span>{t('dash.toSite')}</span>
           </Link>
@@ -51,16 +69,12 @@ export function DashboardLayout() {
       </div>
 
       <main id="main" className="dash__main" tabIndex={-1}>
-        <Outlet />
-        {DEMO && <p className="dash__note"><Icon name="info" size={14} />{t('dash.demoNote')}</p>}
+        {children}
       </main>
 
       <nav className="dash__tabs" aria-label={t('a11y.dashNav')}>
         {NAV.map((n) => (
-          <NavLink key={n.to} to={n.to} end={n.end} className="dash__tab">
-            <Icon name={n.icon} size={20} />
-            <span>{t(n.key)}</span>
-          </NavLink>
+          <NavItem key={n.href} item={n} className="dash__tab" iconSize={20} />
         ))}
       </nav>
     </div>

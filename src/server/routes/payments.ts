@@ -1,9 +1,10 @@
 import { Hono } from 'hono';
-import { clickEnabled, env, paymeEnabled } from '../env.js';
-import { clickCheckoutUrl, handleClick } from '../payments/click.js';
-import { checkPaymeAuth, handlePayme, paymeCheckoutUrl } from '../payments/payme.js';
-import { supabaseRepo } from '../payments/repo.js';
-import { db, userFromRequest } from '../lib/supabase.js';
+import { clickEnabled, env, paymeEnabled } from '../env';
+import { clickCheckoutUrl, handleClick } from '../payments/click';
+import { checkPaymeAuth, handlePayme, paymeCheckoutUrl } from '../payments/payme';
+import { supabaseRepo } from '../payments/repo';
+import { db, userFromRequest } from '../lib/supabase';
+import { siteOrigin } from '../lib/origin';
 
 export const payments = new Hono();
 
@@ -31,7 +32,7 @@ payments.post('/orders', async (c) => {
     .single();
   if (error || !order) return c.json({ error: 'order_failed' }, 500);
 
-  const returnUrl = `${env.frontendUrl}/payment/return?order=${order.id}`;
+  const returnUrl = `${siteOrigin(c)}/payment/return?order=${order.id}`;
   const lang = ['uz', 'ru', 'en'].includes(body.lang) ? body.lang : 'uz';
 
   const url =

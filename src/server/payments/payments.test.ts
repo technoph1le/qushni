@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, it } from 'node:test';
-import { clickSign, handleClick } from './click.js';
-import { checkPaymeAuth, handlePayme } from './payme.js';
-import type { ClickTx, Order, PaymentRepo, PaymeTx } from './repo.js';
+import { clickSign, handleClick } from './click';
+import { checkPaymeAuth, handlePayme } from './payme';
+import type { ClickTx, Order, PaymentRepo, PaymeTx } from './repo';
 
 function memoryRepo() {
   const orders = new Map<number, Order>();
@@ -154,7 +154,7 @@ describe('Click', () => {
   it('prepares and completes a payment', async () => {
     const prep = await handleClick('prepare', params('0'), cfg, m.repo);
     assert.equal(prep.error, 0);
-    assert.equal(prep.merchant_prepare_id, 20);
+    assert.equal((prep as Record<string, unknown>).merchant_prepare_id, 20);
     const done = await handleClick('complete', params('1'), cfg, m.repo);
     assert.equal(done.error, 0);
     assert.equal(m.orders.get(20)!.status, 'paid');

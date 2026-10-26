@@ -3,13 +3,31 @@
   "private": true,
   "description": "Qo'shni — roommate and room finder for Uzbekistan. A Mir2Dos product.",
   "scripts": {
-    "setup": "npm install --prefix frontend && npm install --prefix backend && node scripts/setup-env.mjs",
+    "setup": "npm install && node scripts/setup-env.mjs",
     "dev": "node scripts/dev.mjs",
-    "build": "npm run build --prefix frontend && npm run build --prefix backend",
-    "test": "npm test --prefix backend",
-    "typecheck": "npm run typecheck --prefix frontend && npm run typecheck --prefix backend"
+    "dev:next": "next dev -p 5173",
+    "build": "next build",
+    "start": "next start",
+    "test": "tsx --test src/server/**/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "telegram:webhook": "tsx --env-file=.env.local scripts/set-webhook.ts"
   },
   "engines": {
-    "node": ">=20.6"
+    "node": ">=20.9"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "hono": "^4.6.3",
+    "next": "^15.5.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2"
   }
 }

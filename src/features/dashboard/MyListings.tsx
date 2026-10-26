@@ -1,5 +1,7 @@
+'use client';
+
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { useAuth } from '../auth/AuthProvider';
 import { Icon } from '../../components/Icon';
 import { Photo } from '../../components/ui';
@@ -34,7 +36,7 @@ export function PhoneBanner() {
   const { user } = useAuth();
   if (!user || user.phoneVerified) return null;
   return (
-    <Link to="/dashboard/profile" className="tip tip--warn">
+    <Link href="/dashboard/profile" className="tip tip--warn">
       <Icon name="phone" size={18} />
       <div>
         <strong>{t('verify.t')}</strong>
@@ -64,7 +66,7 @@ export function MyListingsTable({ list, reload }: { list: Listing[] | null; relo
         <Icon name="home" size={28} />
         <strong>{t('dash.empty')}</strong>
         <span className="muted">{t('dash.emptyHint')}</span>
-        <Link to="/dashboard/new" className="btn btn--lime">
+        <Link href="/dashboard/new" className="btn btn--lime">
           <Icon name="plus" size={16} />
           {t('nav.post')}
         </Link>
@@ -84,7 +86,7 @@ export function MyListingsTable({ list, reload }: { list: Listing[] | null; relo
         </div>
         {list.map((l) => (
           <div key={l.id} className="mylist__row">
-            <Link to={`/listing/${l.id}`} className="mylist__item">
+            <Link href={`/listing/${l.id}`} className="mylist__item">
               <Photo src={l.photos[0]} alt="" className="mylist__thumb" />
               <span>
                 <strong>{lt(l.title)}</strong>
@@ -102,7 +104,7 @@ export function MyListingsTable({ list, reload }: { list: Listing[] | null; relo
               </span>
             </span>
             <span className="mylist__actions">
-              <Link to={`/dashboard/edit/${l.id}`} className="icon-btn" title={t('dash.edit')} aria-label={t('dash.edit')}>
+              <Link href={`/dashboard/edit/${l.id}`} className="icon-btn" title={t('dash.edit')} aria-label={t('dash.edit')}>
                 <Icon name="edit" size={17} />
               </Link>
               {l.status !== 'blocked' && (

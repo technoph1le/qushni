@@ -1,5 +1,7 @@
+'use client';
+
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../features/auth/AuthProvider';
 import { Icon } from '../../components/Icon';
 import { PhoneVerify } from '../../features/auth/PhoneVerify';
@@ -48,8 +50,7 @@ function emptyDraft(): ListingDraft {
   };
 }
 
-export function ListingFormPage() {
-  const { id } = useParams();
+export function ListingFormPage({ id }: { id?: string }) {
   const { t, lang } = useI18n();
   const { user } = useAuth();
 
@@ -74,7 +75,7 @@ export function ListingFormPage() {
 
 function ListingEditor({ id, userId, phone, lang }: { id: string | null; userId: string; phone: string; lang: Lang }) {
   const { t, money } = useI18n();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [l, setL] = useState<ListingDraft | null>(id ? null : emptyDraft());
   const [step, setStep] = useState(0);
   const [error, setError] = useState(false);
@@ -85,8 +86,8 @@ function ListingEditor({ id, userId, phone, lang }: { id: string | null; userId:
 
   useEffect(() => {
     if (!id) return;
-    repo.getDraft(id).then((d) => (d ? setL(d) : navigate('/dashboard/listings', { replace: true })));
-  }, [id, navigate]);
+    repo.getDraft(id).then((d) => (d ? setL(d) : router.replace('/dashboard/listings')));
+  }, [id, router]);
 
   if (!l) return <div className="empty empty--panel"><span className="spinner" /></div>;
 
@@ -115,7 +116,7 @@ function ListingEditor({ id, userId, phone, lang }: { id: string | null; userId:
     try {
       await repo.saveListing(userId, { ...l, title: titleText, description: descText });
       reloadListings();
-      navigate('/dashboard/listings');
+      router.push('/dashboard/listings');
     } catch (err) {
       console.error(err);
       setSaveError(true);

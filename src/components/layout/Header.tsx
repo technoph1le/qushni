@@ -1,5 +1,8 @@
+'use client';
+
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '../../features/auth/AuthProvider';
 import { useI18n } from '../../i18n';
 import { useStore } from '../../lib/store';
@@ -11,7 +14,7 @@ export function Header() {
   const { user } = useAuth();
   const favCount = useStore((s) => s.favorites.length);
   const [open, setOpen] = useState(false);
-  const { pathname } = useLocation();
+  const pathname = usePathname();
   const anchor = (id: string) => (pathname === '/' ? `#${id}` : `/#${id}`);
   const displayName = user?.name || user?.phone || '';
 
@@ -26,22 +29,22 @@ export function Header() {
         </nav>
         <div className="header__actions">
           <LangSwitch />
-          <Link to="/saved" className="icon-btn" aria-label={t('nav.saved')} title={t('nav.saved')}>
+          <Link href="/saved" className="icon-btn" aria-label={t('nav.saved')} title={t('nav.saved')}>
             <Icon name="heart" />
             {favCount > 0 && <span className="badge">{favCount}</span>}
           </Link>
           {user ? (
-            <Link to="/dashboard" className="btn btn--ghost header__desk header__user">
+            <Link href="/dashboard" className="btn btn--ghost header__desk header__user">
               <Avatar name={displayName || '?'} size={26} />
               <span>{displayName || t('nav.dashboard')}</span>
             </Link>
           ) : (
-            <Link to="/login" className="btn btn--ghost header__desk">
+            <Link href="/login" className="btn btn--ghost header__desk">
               <Icon name="user" size={16} />
               {t('auth.signIn')}
             </Link>
           )}
-          <Link to="/dashboard/new" className="btn btn--dark header__desk">
+          <Link href="/dashboard/new" className="btn btn--dark header__desk">
             <Icon name="plus" size={16} />
             {t('nav.post')}
           </Link>
@@ -55,9 +58,9 @@ export function Header() {
           <a href={anchor('listings')}>{t('nav.listings')}</a>
           <a href={anchor('how')}>{t('nav.how')}</a>
           <a href={anchor('plans')}>{t('nav.plans')}</a>
-          <Link to="/saved">{t('nav.saved')}</Link>
-          {user ? <Link to="/dashboard">{t('nav.dashboard')}</Link> : <Link to="/login">{t('auth.signIn')}</Link>}
-          <Link to="/dashboard/new" className="btn btn--dark btn--block">
+          <Link href="/saved">{t('nav.saved')}</Link>
+          {user ? <Link href="/dashboard">{t('nav.dashboard')}</Link> : <Link href="/login">{t('auth.signIn')}</Link>}
+          <Link href="/dashboard/new" className="btn btn--dark btn--block">
             <Icon name="plus" size={16} />
             {t('nav.post')}
           </Link>

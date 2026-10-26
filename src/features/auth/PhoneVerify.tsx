@@ -1,7 +1,9 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
 import { useAuth, type PhoneStart } from './AuthProvider';
 import { useI18n, type TKey } from '../../i18n';
-import { ApiError, DEMO } from '../../lib/supabase';
+import { ApiError } from '../../lib/supabase';
 import { formatPhone } from '../../lib/utils';
 import { Icon } from '../../components/Icon';
 
@@ -168,7 +170,6 @@ export function PhoneVerify({ onDone }: { onDone: (result: 'signed_in' | 'linked
               {cooldown > 0 ? t('auth.resendIn', { n: cooldown }) : t('auth.resend')}
             </button>
           </div>
-          {DEMO && <p className="muted small">{t('auth.demo')}</p>}
         </form>
       )}
 

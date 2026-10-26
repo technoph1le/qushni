@@ -1,9 +1,19 @@
-import { createClient, type User } from '@supabase/supabase-js';
+import 'server-only';
+import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js';
 import type { Context } from 'hono';
-import { env } from '../env.js';
+import { env } from '../env';
 
-export const db = createClient(env.supabaseUrl, env.supabaseServiceKey, {
-  auth: { persistSession: false, autoRefreshToken: false },
+let client: SupabaseClient | null = null;
+
+/** Service-role client: bypasses row-level security, so it must only ever run on the server. */
+export const db = new Proxy({} as SupabaseClient, {
+  get(_target, prop) {
+    client ??= createClient(env.supabaseUrl, env.supabaseServiceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const value = Reflect.get(client, prop);
+    return typeof value === 'function' ? value.bind(client) : value;
+  },
 });
 
 export async function userFromRequest(c: Context): Promise<User | null> {

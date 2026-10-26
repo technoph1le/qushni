@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
 import { LEGAL_UPDATED } from '../config';
 import { PRIVACY, TERMS } from '../content/legal';
 import { useI18n } from '../i18n';
@@ -7,10 +8,6 @@ import { useI18n } from '../i18n';
 export function LegalPage({ doc }: { doc: 'privacy' | 'terms' }) {
   const { t, lang, date } = useI18n();
   const content = (doc === 'privacy' ? PRIVACY : TERMS)[lang];
-
-  useEffect(() => {
-    document.title = `${content.title} — Qo'shni`;
-  }, [content.title]);
 
   return (
     <article className="container legal">
@@ -52,7 +49,7 @@ export function LegalPage({ doc }: { doc: 'privacy' | 'terms' }) {
             </section>
           ))}
           <p className="legal__switch">
-            {doc === 'privacy' ? <Link to="/terms">{t('legal.terms')}</Link> : <Link to="/privacy">{t('legal.privacy')}</Link>}
+            {doc === 'privacy' ? <Link href="/terms">{t('legal.terms')}</Link> : <Link href="/privacy">{t('legal.privacy')}</Link>}
           </p>
         </div>
       </div>

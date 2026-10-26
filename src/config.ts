@@ -1,7 +1,3 @@
-// Demo mode only. With Supabase connected, the switch is `app_settings.paywall_enabled` in the database,
-// and the database enforces it. `?paywall=1` previews the locked UI on the dev server.
-export const PAYWALL_ENABLED = false;
-
 export interface Plan {
   id: '7d' | '10d' | '30d';
   days: number;

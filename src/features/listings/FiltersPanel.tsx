@@ -1,3 +1,5 @@
+'use client';
+
 import { CITIES, cityById } from '../../data/places';
 import { DEFAULT_FILTERS, PRICE_MAX, PRICE_MIN, PRICE_STEP, type FilterState } from './filters';
 import { useI18n } from '../../i18n';

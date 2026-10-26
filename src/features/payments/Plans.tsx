@@ -1,10 +1,11 @@
+'use client';
+
 import { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '../auth/AuthProvider';
 import { PLANS, type Plan } from '../../config';
 import { useI18n } from '../../i18n';
-import { apiFetch, DEMO } from '../../lib/supabase';
-import { setState } from '../../lib/store';
+import { apiFetch } from '../../lib/supabase';
 import { cx } from '../../lib/utils';
 import { Icon } from '../../components/Icon';
 import { useDialog } from '../../components/useDialog';
@@ -48,29 +49,21 @@ type Provider = 'payme' | 'click';
 
 export function PayModal({ plan, onClose }: { plan: Plan; onClose: () => void }) {
   const { t, money, lang } = useI18n();
-  const { user, refreshAccess } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const { user } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
   const [provider, setProvider] = useState<Provider>('payme');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [done, setDone] = useState(false);
   const boxRef = useDialog<HTMLDivElement>(onClose);
 
   const pay = async () => {
     if (!user) {
-      navigate(`/login?next=${encodeURIComponent(location.pathname + location.search)}`);
+      router.push(`/login?next=${encodeURIComponent(pathname + window.location.search)}`);
       return;
     }
     setError('');
     setBusy(true);
-    if (DEMO) {
-      setState({ demoAccessUntil: new Date(Date.now() + plan.days * 86400000).toISOString() });
-      await refreshAccess();
-      setDone(true);
-      setBusy(false);
-      return;
-    }
     try {
       const res = await apiFetch<{ url: string }>('/payments/orders', { body: { plan_id: plan.id, provider, lang } });
       window.location.href = res.url;
@@ -86,16 +79,9 @@ export function PayModal({ plan, onClose }: { plan: Plan; onClose: () => void })
         <button className="icon-btn modal__x" onClick={onClose} aria-label={t('pay.close')}>
           <Icon name="x" />
         </button>
-        {done ? (
-          <div className="modal__done">
-            <span className="modal__check"><Icon name="check" size={28} /></span>
-            <h3 id="pay-title">{t('pay.done')}</h3>
-            <button className="btn btn--dark btn--block" onClick={onClose}>{t('common.close')}</button>
-          </div>
-        ) : (
-          <>
+        <>
             <h3 id="pay-title">{t('pay.title')}</h3>
-            <p className="muted small">{DEMO ? t('pay.lead') : t('pay.leadReal')}</p>
+            <p className="muted small">{t('pay.leadReal')}</p>
             <div className="pay-summary">
               <span>{planLabel(plan, t)}</span>
               <strong>{money(plan.price)}</strong>
@@ -113,7 +99,6 @@ export function PayModal({ plan, onClose }: { plan: Plan; onClose: () => void })
               {!user ? t('pay.loginFirst') : busy ? t('pay.redirecting') : t('pay.confirm', { v: money(plan.price) })}
             </button>
           </>
-        )}
       </div>
     </div>
   );

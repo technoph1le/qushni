@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
 import { useI18n } from '../i18n';
 
 export function NotFoundPage() {
@@ -6,7 +8,7 @@ export function NotFoundPage() {
   return (
     <div className="container page-empty">
       <h1>{t('notFound.title')}</h1>
-      <Link to="/" className="btn btn--dark">{t('notFound.cta')}</Link>
+      <Link href="/" className="btn btn--dark">{t('notFound.cta')}</Link>
     </div>
   );
 }
