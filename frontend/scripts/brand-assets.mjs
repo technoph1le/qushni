@@ -1,5 +1,5 @@
 // Regenerates favicons, app icons and the link-preview image from the brand logos in public/.
-// Source files: public/logo.svg (mark) and public/logo-with-text.svg (wordmark). Run: node scripts/brand-assets.mjs
+// Source files: public/logo.svg (mark) and public/logo-with-text.svg (wordmark). Run from frontend/: node scripts/brand-assets.mjs
 import { readFile, writeFile } from 'node:fs/promises';
 import sharp from 'sharp';
 

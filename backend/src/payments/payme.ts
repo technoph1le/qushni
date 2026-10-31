@@ -1,6 +1,6 @@
 // Payme Merchant API (JSON-RPC). Payme calls this endpoint; we never call Payme.
 // Docs: https://developer.help.paycom.uz/metody-merchant-api/
-import type { PaymentRepo, PaymeTx } from './repo';
+import type { PaymentRepo, PaymeTx } from './repo.js';
 
 const TIMEOUT_MS = 12 * 60 * 60 * 1000;
 

@@ -49,8 +49,8 @@ export function PaymentReturnPage() {
   }, [orderId, refreshAccess]);
 
   return (
-    <div className="container page-empty">
-      <span className={`result-icon result-icon--${status}`}>
+    <div className="container page-empty" role="status">
+      <span className={`result-icon result-icon--${status}`} aria-hidden="true">
         {status === 'pending' ? <span className="spinner" /> : <Icon name={status === 'paid' ? 'check' : 'x'} size={28} />}
       </span>
       <h1>{t(`payret.${status}.t`)}</h1>

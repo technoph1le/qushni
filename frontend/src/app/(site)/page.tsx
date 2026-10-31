@@ -6,5 +6,6 @@ export const dynamic = 'force-dynamic';
 
 export default async function Page() {
   const listings = await fetchPublicListings();
-  return <HomePage initialListings={listings} />;
+  // Cards never show the description; leaving it out keeps the first HTML small.
+  return <HomePage initialListings={listings.map((l) => ({ ...l, description: '' }))} />;
 }

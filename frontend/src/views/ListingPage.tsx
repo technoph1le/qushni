@@ -7,7 +7,8 @@ import { Icon, type IconName } from '../components/Icon';
 import { PayModal, PlanOptions } from '../features/payments/Plans';
 import { Avatar, Photo } from '../components/ui';
 import type { Plan } from '../config';
-import { cityName, districtName } from '../data/places';
+import { cityName, districtName, regionById } from '../data/places';
+import { listingTitle } from '../features/listings/title';
 import { repo, SubscriptionRequired } from '../data/repo';
 import { useListings } from '../data/useListings';
 import { useI18n } from '../i18n';
@@ -74,7 +75,7 @@ export function ListingPage({ id, initialListing }: { id: string; initialListing
     );
   }
 
-  const title = lt(listing.title);
+  const title = listingTitle(listing, lt, t);
   const area = `${districtName(listing.city, listing.district, lang)}, ${cityName(listing.city, lang)}`;
   const showLocked = locked || !access.has;
 
@@ -87,11 +88,8 @@ export function ListingPage({ id, initialListing }: { id: string; initialListing
   };
 
   const facts: { icon: IconName; label: string; value: string }[] = [
-    { icon: 'bed', label: t('detail.rooms'), value: String(listing.rooms) },
-    { icon: 'ruler', label: t('detail.area'), value: t('detail.m2', { n: listing.area }) },
-    { icon: 'layers', label: t('detail.floor'), value: t('detail.floorOf', { a: listing.floor, b: listing.floors }) },
-    { icon: 'calendar', label: t('detail.available'), value: date(listing.availableFrom) },
-    { icon: 'wallet', label: t('detail.deposit'), value: listing.deposit ? money(listing.deposit) : t('detail.noDeposit') },
+    { icon: 'bed', label: t('form.roomType'), value: t(`room.${listing.roomType}`) },
+    { icon: 'users', label: t('form.spots'), value: String(listing.spots) },
     { icon: 'bolt', label: t('detail.utilities'), value: listing.utilitiesIncluded ? t('detail.utilitiesIn') : t('detail.utilitiesOut') },
   ];
 
@@ -157,16 +155,9 @@ export function ListingPage({ id, initialListing }: { id: string; initialListing
           </div>
 
           <div className="detail__badges">
-            <span className="pill pill--lg">
-              <Icon name="metro" size={16} />
-              {listing.metro ? t('card.minMetro', { n: listing.metro.minutes, s: listing.metro.station }) : t('card.noMetro')}
-            </span>
-            {listing.amenities.includes('bus') && <span className="pill pill--lg"><Icon name="bus" size={16} />{t('am.bus')}</span>}
-            {listing.centre && <span className="pill pill--lg"><Icon name="pin" size={16} />{t('card.centre')}</span>}
+            {regionById(listing.origin) && <span className="tag tag--origin"><Icon name="users" size={16} />{regionById(listing.origin)!.from[lang]}</span>}
+            {listing.metro && <span className="pill pill--lg"><Icon name="metro" size={16} />{listing.metro}</span>}
             <span className={cx('tag', `tag--${listing.gender}`)}>{t('detail.lookingFor')}: {t(`gender.${listing.gender}`)}</span>
-            {listing.audience.map((a) => (
-              <span key={a} className="pill pill--lg">{t(`aud.${a}`)}</span>
-            ))}
           </div>
 
           <div className="facts">
@@ -186,39 +177,16 @@ export function ListingPage({ id, initialListing }: { id: string; initialListing
             </section>
           )}
 
-          <section className="detail__section">
-            <h2>{t('detail.amenities')}</h2>
-            <ul className="amenities">
-              {listing.amenities.map((a) => (
-                <li key={a}><Icon name={AMENITY_ICON[a] ?? 'check'} size={18} />{t(`am.${a}`)}</li>
-              ))}
-            </ul>
-          </section>
-
-          {listing.housemates.length > 0 && (
+          {listing.amenities.length > 0 && (
             <section className="detail__section">
-              <h2>{t('detail.housemates')}</h2>
-              <div className="mates">
-                {listing.housemates.map((m, i) => (
-                  <div key={m.name + i} className="mate">
-                    <Avatar name={m.name} size={44} />
-                    <div>
-                      <strong>{m.name}{m.age ? `, ${m.age}` : ''}</strong>
-                      <span className="muted">{m.occupation}</span>
-                    </div>
-                  </div>
+              <h2>{t('detail.amenities')}</h2>
+              <ul className="amenities">
+                {listing.amenities.map((a) => (
+                  <li key={a}><Icon name={AMENITY_ICON[a] ?? 'check'} size={18} />{t(`am.${a}`)}</li>
                 ))}
-              </div>
+              </ul>
             </section>
           )}
-
-          <section className="detail__section">
-            <h2>{t('detail.rules')}</h2>
-            <ul className="amenities">
-              <li className={cx(!listing.smoking && 'is-no')}><Icon name="smoke" size={18} />{listing.smoking ? t('detail.smokingYes') : t('detail.smokingNo')}</li>
-              <li className={cx(!listing.pets && 'is-no')}><Icon name="paw" size={18} />{listing.pets ? t('detail.petsYes') : t('detail.petsNo')}</li>
-            </ul>
-          </section>
 
           <section className="detail__section">
             <h2>{t('detail.location')}</h2>
@@ -231,7 +199,7 @@ export function ListingPage({ id, initialListing }: { id: string; initialListing
               {!location && <span className="map__circle" aria-hidden="true" />}
             </div>
             {location ? (
-              <p className="map__caption"><Icon name="pin" size={16} /><strong>{t('detail.exact')}:</strong> {location.address}, {area}</p>
+              <p className="map__caption"><Icon name="pin" size={16} /><strong>{t('detail.exact')}:</strong> {location.address ? `${location.address}, ${area}` : area}</p>
             ) : (
               <p className="map__caption muted"><Icon name="lock" size={16} />{area}. {t('detail.approx')}</p>
             )}
@@ -275,7 +243,7 @@ export function ListingPage({ id, initialListing }: { id: string; initialListing
                 )}
               </div>
             ) : (
-              <button className="btn btn--lime btn--block btn--lg" onClick={reveal}>
+              <button className="btn btn--accent btn--block btn--lg" onClick={reveal}>
                 <Icon name="phone" size={18} />
                 {t('detail.showPhone')}
               </button>

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { it } from 'node:test';
-import { normalizePhone } from './phone';
+import { normalizePhone } from './phone.js';
 
 it('accepts Uzbek numbers in common formats', () => {
   assert.equal(normalizePhone('+998 90 123 45 67'), '+998901234567');

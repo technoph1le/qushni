@@ -36,7 +36,7 @@ export const PRIVACY: Record<Lang, LegalDoc> = {
         paragraphs: ['We collect only what is needed to run the service:'],
         list: [
           'Account: your name; your email address and profile photo if you sign in with Google; your phone number, Telegram user ID and Telegram username if you confirm your number through our Telegram bot.',
-          'Listings: everything you add to a listing — text, price, photos, the first names, ages and occupations of housemates, the exact address and the map point. Add information about housemates only with their consent.',
+          'Listings: everything you add to a listing — text, price, photos, where the people living there are from, and the address and map point if you give them.',
           'Usage: how many times your listing is viewed and how many times its phone number is shown, and which signed-in users opened a listing’s contacts.',
           'Payments (once paid plans launch): the plan, amount and status of your orders. Card details are entered on Payme or Click pages; we never see or store them.',
           'On your device: your language, saved listings and sign-in session are kept in your browser’s local storage.',
@@ -129,7 +129,7 @@ export const PRIVACY: Record<Lang, LegalDoc> = {
         paragraphs: ['Biz faqat xizmat ishlashi uchun zarur bo‘lgan ma’lumotlarni yig‘amiz:'],
         list: [
           'Akkaunt: ismingiz; Google orqali kirsangiz — email manzilingiz va profil rasmingiz; raqamingizni Telegram botimiz orqali tasdiqlasangiz — telefon raqamingiz, Telegram ID va Telegram foydalanuvchi nomingiz.',
-          'E’lonlar: e’longa qo‘shgan barcha ma’lumotlar — matn, narx, rasmlar, sheriklarning ismi, yoshi va mashg‘uloti, aniq manzil va xaritadagi nuqta. Sheriklar haqidagi ma’lumotni faqat ularning roziligi bilan qo‘shing.',
+          'E’lonlar: e’longa qo‘shgan barcha ma’lumotlar — matn, narx, rasmlar, u yerda yashovchilar qaysi viloyatdan ekani, ko‘rsatsangiz — manzil va xaritadagi nuqta.',
           'Foydalanish: e’loningiz necha marta ko‘rilgani, telefon raqami necha marta ochilgani va qaysi akkauntga kirgan foydalanuvchilar e’lon kontaktlarini ochgani.',
           'To‘lovlar (pullik tariflar ishga tushgach): buyurtmalaringizning tarifi, summasi va holati. Karta ma’lumotlari Payme yoki Click sahifalarida kiritiladi; biz ularni ko‘rmaymiz va saqlamaymiz.',
           'Qurilmangizda: tanlangan til, saqlangan e’lonlar va kirish seansi brauzeringiz xotirasida saqlanadi.',
@@ -222,7 +222,7 @@ export const PRIVACY: Record<Lang, LegalDoc> = {
         paragraphs: ['Мы собираем только то, что нужно для работы сервиса:'],
         list: [
           'Аккаунт: ваше имя; email и фото профиля, если вы входите через Google; номер телефона, Telegram ID и имя пользователя Telegram, если вы подтверждаете номер через наш Telegram-бот.',
-          'Объявления: всё, что вы добавляете в объявление, — текст, цену, фото, имена, возраст и род занятий соседей, точный адрес и точку на карте. Добавляйте данные о соседях только с их согласия.',
+          'Объявления: всё, что вы добавляете в объявление, — текст, цену, фото, откуда люди, которые там живут, а также адрес и точку на карте, если вы их указали.',
           'Использование: сколько раз ваше объявление просмотрели и сколько раз открыли номер телефона, а также какие вошедшие пользователи открыли контакты объявления.',
           'Платежи (после запуска платных тарифов): тариф, сумма и статус заказов. Данные карты вводятся на страницах Payme или Click; мы их не видим и не храним.',
           'На вашем устройстве: язык, избранные объявления и сеанс входа хранятся в памяти браузера.',

@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { useAuth } from '../../features/auth/AuthProvider';
 import { useI18n } from '../../i18n';
 import { useStore } from '../../lib/store';
@@ -14,24 +13,17 @@ export function Header() {
   const { user } = useAuth();
   const favCount = useStore((s) => s.favorites.length);
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
-  const anchor = (id: string) => (pathname === '/' ? `#${id}` : `/#${id}`);
   const displayName = user?.name || user?.phone || '';
 
   return (
     <header className="header">
       <div className="container header__inner">
         <Logo />
-        <nav className="header__nav" aria-label={t('a11y.mainNav')}>
-          <a href={anchor('listings')}>{t('nav.listings')}</a>
-          <a href={anchor('how')}>{t('nav.how')}</a>
-          <a href={anchor('plans')}>{t('nav.plans')}</a>
-        </nav>
         <div className="header__actions">
           <LangSwitch />
-          <Link href="/saved" className="icon-btn" aria-label={t('nav.saved')} title={t('nav.saved')}>
+          <Link href="/saved" className="icon-btn" aria-label={favCount > 0 ? `${t('nav.saved')} (${favCount})` : t('nav.saved')} title={t('nav.saved')}>
             <Icon name="heart" />
-            {favCount > 0 && <span className="badge">{favCount}</span>}
+            {favCount > 0 && <span className="badge" aria-hidden="true">{favCount}</span>}
           </Link>
           {user ? (
             <Link href="/dashboard" className="btn btn--ghost header__desk header__user">
@@ -55,9 +47,6 @@ export function Header() {
       </div>
       {open && (
         <nav id="mobile-menu" className="mobile-menu" aria-label={t('a11y.mainNav')} onClick={() => setOpen(false)}>
-          <a href={anchor('listings')}>{t('nav.listings')}</a>
-          <a href={anchor('how')}>{t('nav.how')}</a>
-          <a href={anchor('plans')}>{t('nav.plans')}</a>
           <Link href="/saved">{t('nav.saved')}</Link>
           {user ? <Link href="/dashboard">{t('nav.dashboard')}</Link> : <Link href="/login">{t('auth.signIn')}</Link>}
           <Link href="/dashboard/new" className="btn btn--dark btn--block">

@@ -1,9 +1,9 @@
 import { Hono } from 'hono';
-import { env } from '../env';
-import { db } from '../lib/supabase';
-import { botText, pickLang, tg } from '../lib/telegram';
-import { normalizePhone } from '../lib/phone';
-import { sendCode } from '../lib/loginCode';
+import { env } from '../env.js';
+import { db } from '../lib/supabase.js';
+import { botText, pickLang, tg } from '../lib/telegram.js';
+import { normalizePhone } from '../lib/phone.js';
+import { sendCode } from '../lib/loginCode.js';
 
 interface TgMessage {
   chat: { id: number };

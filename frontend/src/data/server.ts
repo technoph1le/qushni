@@ -1,5 +1,6 @@
 import 'server-only';
 import { createClient } from '@supabase/supabase-js';
+import { unstable_cache } from 'next/cache';
 import { cache } from 'react';
 import type { Listing } from '../types';
 import { publicRowToListing } from './mappers';
@@ -12,7 +13,7 @@ function publicClient() {
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
-export async function fetchPublicListings(): Promise<Listing[]> {
+async function queryPublicListings(): Promise<Listing[]> {
   const sb = publicClient();
   if (!sb) return [];
   const { data, error } = await sb.from('public_listings').select('*').order('created_at', { ascending: false }).limit(500);
@@ -22,6 +23,9 @@ export async function fetchPublicListings(): Promise<Listing[]> {
   }
   return (data ?? []).map(publicRowToListing);
 }
+
+/** Shared across visitors for 30 s, so the home page doesn't wait on the database; the browser refreshes the list right after. */
+export const fetchPublicListings = unstable_cache(queryPublicListings, ['public-listings'], { revalidate: 30 });
 
 /** Cached per request, so the page and its metadata share one query. */
 export const fetchPublicListing = cache(async (id: string): Promise<Listing | null> => {

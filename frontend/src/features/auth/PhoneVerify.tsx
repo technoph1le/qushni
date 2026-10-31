@@ -136,7 +136,7 @@ export function PhoneVerify({ onDone }: { onDone: (result: 'signed_in' | 'linked
             <Icon name="send" size={18} />
             {t('auth.openBot.cta')}
           </a>
-          <p className="phone-verify__wait"><span className="spinner" />{t('auth.waiting')}</p>
+          <p className="phone-verify__wait" role="status"><span className="spinner" aria-hidden="true" />{t('auth.waiting')}</p>
           <button type="button" className="link-btn" onClick={() => setStep({ kind: 'phone' })}>{t('auth.changePhone')}</button>
         </div>
       )}

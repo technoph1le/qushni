@@ -1,20 +1,21 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { cloneElement, isValidElement, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../features/auth/AuthProvider';
 import { Icon } from '../../components/Icon';
 import { PhoneVerify } from '../../features/auth/PhoneVerify';
 import { Chip, Select, Toggle } from '../../components/ui';
-import { CITIES, cityById } from '../../data/places';
+import { CITIES, REGIONS, cityById } from '../../data/places';
 import { repo } from '../../data/repo';
 import { reloadListings } from '../../data/useListings';
 import { useI18n, type TKey } from '../../i18n';
-import type { Amenity, Audience, Gender, Lang, ListingDraft, RoomType } from '../../types';
-import { compressImage, cx, formatPhone, osmEmbed } from '../../lib/utils';
+import type { Amenity, Gender, ListingDraft, RoomType } from '../../types';
+import { compressImage, cx, formatPhone } from '../../lib/utils';
 
-const AMENITIES: Amenity[] = ['metro', 'bus', 'wifi', 'washer', 'ac', 'heating', 'furniture', 'kitchen', 'fridge', 'parking', 'elevator', 'balcony', 'tv', 'security'];
-const STEPS: TKey[] = ['form.step.basics', 'form.step.location', 'form.step.home', 'form.step.people', 'form.step.photos'];
+// Three short steps; only the price is required. Everything else has a default or is optional.
+const STEPS: TKey[] = ['form.step.where', 'form.step.room', 'form.step.photos'];
+const EXTRAS: Amenity[] = ['wifi', 'furniture', 'washer', 'ac', 'heating', 'kitchen', 'fridge', 'parking', 'elevator', 'balcony', 'tv', 'security', 'bus', 'metro'];
 
 function emptyDraft(): ListingDraft {
   const city = CITIES[0];
@@ -28,59 +29,35 @@ function emptyDraft(): ListingDraft {
     lat: city.lat,
     lng: city.lng,
     metro: null,
-    centre: false,
     roomType: 'private',
     price: 0,
-    deposit: 0,
     utilitiesIncluded: false,
     spots: 1,
-    rooms: 2,
-    area: 50,
-    floor: 1,
-    floors: 5,
-    availableFrom: new Date().toISOString().slice(0, 10),
-    amenities: ['wifi'],
+    amenities: [],
     gender: 'any',
-    audience: ['students'],
-    smoking: false,
-    pets: false,
-    housemates: [],
+    origin: null,
     photos: [],
     status: 'active',
   };
 }
 
 export function ListingFormPage({ id }: { id?: string }) {
-  const { t, lang } = useI18n();
   const { user } = useAuth();
-
   if (!user) return null;
-  if (!user.phoneVerified) {
-    return (
-      <>
-        <div className="dash__head">
-          <h1>{t('dash.new')}</h1>
-        </div>
-        <div className="panel verify verify--narrow">
-          <span className="host-card__icon"><Icon name="phone" size={24} /></span>
-          <h3>{t('verify.t')}</h3>
-          <p className="muted">{t('verify.d')}</p>
-          <PhoneVerify onDone={() => {}} />
-        </div>
-      </>
-    );
-  }
-  return <ListingEditor key={id ?? 'new'} id={id ?? null} userId={user.id} phone={user.phone ?? ''} lang={lang} />;
+  return <ListingEditor key={id ?? 'new'} id={id ?? null} userId={user.id} />;
 }
 
-function ListingEditor({ id, userId, phone, lang }: { id: string | null; userId: string; phone: string; lang: Lang }) {
-  const { t, money } = useI18n();
+function ListingEditor({ id, userId }: { id: string | null; userId: string }) {
+  const { t, lang, money } = useI18n();
+  const { user } = useAuth();
   const router = useRouter();
   const [l, setL] = useState<ListingDraft | null>(id ? null : emptyDraft());
   const [step, setStep] = useState(0);
   const [error, setError] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [saving, setSaving] = useState(false);
+  // Phone confirmation is asked for only when publishing, so nothing typed is lost and the form comes first.
+  const [verifying, setVerifying] = useState(false);
   const [locating, setLocating] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -89,38 +66,39 @@ function ListingEditor({ id, userId, phone, lang }: { id: string | null; userId:
     repo.getDraft(id).then((d) => (d ? setL(d) : router.replace('/dashboard/listings')));
   }, [id, router]);
 
-  if (!l) return <div className="empty empty--panel"><span className="spinner" /></div>;
+  if (!l) return <div className="empty empty--panel"><span className="spinner" aria-hidden="true" /></div>;
 
   const set = <K extends keyof ListingDraft>(k: K, v: ListingDraft[K]) => setL((cur) => (cur ? { ...cur, [k]: v } : cur));
   const city = cityById(l.city)!;
-  const titleText = typeof l.title === 'string' ? l.title : l.title[lang];
   const descText = typeof l.description === 'string' ? l.description : l.description[lang];
+  const last = step === STEPS.length - 1;
+  const stepValid = (s: number) => s !== 1 || l.price > 0;
+  const invalid = error && !stepValid(step);
 
-  const stepValid = (s: number) => {
-    if (s === 0) return titleText.trim().length >= 5;
-    if (s === 1) return l.address.trim().length > 3;
-    if (s === 4) return l.price > 0;
-    return true;
-  };
-
-  const next = async () => {
-    if (!stepValid(step)) return setError(true);
-    setError(false);
-    if (step < STEPS.length - 1) {
-      setStep(step + 1);
-      window.scrollTo(0, 0);
-      return;
-    }
+  const save = async () => {
     setSaving(true);
     setSaveError(false);
     try {
-      await repo.saveListing(userId, { ...l, title: titleText, description: descText });
+      await repo.saveListing(userId, { ...l, description: descText });
       reloadListings();
       router.push('/dashboard/listings');
     } catch (err) {
       console.error(err);
       setSaveError(true);
       setSaving(false);
+    }
+  };
+
+  const next = () => {
+    if (!stepValid(step)) return setError(true);
+    setError(false);
+    if (!last) {
+      setStep(step + 1);
+      window.scrollTo(0, 0);
+    } else if (!user?.phoneVerified) {
+      setVerifying(true);
+    } else {
+      save();
     }
   };
 
@@ -145,8 +123,7 @@ function ListingEditor({ id, userId, phone, lang }: { id: string | null; userId:
       { enableHighAccuracy: true, timeout: 10000 },
     );
   };
-
-  const invalid = error && !stepValid(step);
+  const located = l.lat !== city.lat || l.lng !== city.lng;
 
   return (
     <>
@@ -174,159 +151,91 @@ function ListingEditor({ id, userId, phone, lang }: { id: string | null; userId:
       >
         {step === 0 && (
           <>
-            <Field label={t('form.title')} required invalid={invalid && titleText.trim().length < 5}>
-              <input value={titleText} onChange={(e) => set('title', e.target.value)} placeholder={t('form.titlePh')} maxLength={90} />
-            </Field>
-            <Field label={t('form.description')}>
-              <textarea rows={5} value={descText} onChange={(e) => set('description', e.target.value)} placeholder={t('form.descriptionPh')} />
-            </Field>
-            <div className="field">
-              <span className="field__label">{t('form.roomType')}</span>
-              <div className="choice-cards">
-                {(['private', 'shared', 'studio'] as RoomType[]).map((r) => (
-                  <button type="button" key={r} className={cx('choice-card', l.roomType === r && 'is-active')} onClick={() => set('roomType', r)}>
-                    <Icon name={r === 'shared' ? 'users' : r === 'studio' ? 'home' : 'bed'} size={22} />
-                    {t(`room.${r}`)}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <Field label={t('form.spots')}>
-              <Stepper value={l.spots} min={1} max={10} onChange={(v) => set('spots', v)} />
-            </Field>
-          </>
-        )}
-
-        {step === 1 && (
-          <>
             <div className="form__row">
               <Select
                 label={t('form.city')}
                 value={l.city}
                 onChange={(e) => {
                   const c = cityById(e.target.value)!;
-                  setL((cur) => (cur ? { ...cur, city: c.id, district: c.districts[0].id, lat: c.lat, lng: c.lng, metro: null } : cur));
+                  setL((cur) =>
+                    cur
+                      ? {
+                          ...cur, city: c.id, district: c.districts[0].id, lat: c.lat, lng: c.lng, metro: null,
+                          // "Near metro" means nothing in a city without one.
+                          amenities: c.metro.length ? cur.amenities : cur.amenities.filter((a) => a !== 'metro'),
+                        }
+                      : cur,
+                  );
                 }}
               >
                 {CITIES.map((c) => <option key={c.id} value={c.id}>{c.name[lang]}</option>)}
               </Select>
-              <Select label={t('form.district')} value={l.district} onChange={(e) => set('district', e.target.value)}>
-                {city.districts.map((d) => <option key={d.id} value={d.id}>{d.name[lang]}</option>)}
-              </Select>
+              {/* Cities without a district list have a single "centre" entry: nothing to choose. */}
+              {city.districts.length > 1 && (
+                <Select label={t('form.district')} value={l.district} onChange={(e) => set('district', e.target.value)}>
+                  {city.districts.map((d) => <option key={d.id} value={d.id}>{d.name[lang]}</option>)}
+                </Select>
+              )}
             </div>
-            <Field label={t('form.address')} required hint={t('form.addressHint')} invalid={invalid}>
+            {city.metro.length > 0 && (
+              <Select label={t('form.metro')} value={l.metro ?? ''} onChange={(e) => set('metro', e.target.value || null)}>
+                <option value="">{t('form.noMetro')}</option>
+                {city.metro.map((m) => <option key={m} value={m}>{m}</option>)}
+              </Select>
+            )}
+            <Field label={t('form.address')} hint={t('form.addressHint')}>
               <input value={l.address} onChange={(e) => set('address', e.target.value)} placeholder={t('form.addressPh')} />
             </Field>
-            {city.metro.length > 0 && (
-              <div className="form__row">
-                <Select
-                  label={t('form.metro')}
-                  value={l.metro?.station ?? ''}
-                  onChange={(e) => set('metro', e.target.value ? { station: e.target.value, minutes: l.metro?.minutes ?? 10 } : null)}
-                >
-                  <option value="">{t('form.noMetro')}</option>
-                  {city.metro.map((m) => <option key={m} value={m}>{m}</option>)}
-                </Select>
-                {l.metro && (
-                  <Field label={t('form.metroMin')}>
-                    <Stepper value={l.metro.minutes} min={1} max={60} onChange={(v) => set('metro', { station: l.metro!.station, minutes: v })} />
-                  </Field>
-                )}
-              </div>
-            )}
-            <Toggle checked={l.centre} onChange={(v) => set('centre', v)} label={<><Icon name="pin" size={16} />{t('form.centre')}</>} />
+            <div className="locate-row">
+              <button type="button" className="btn btn--outline" onClick={locate} disabled={locating}>
+                <Icon name="locate" size={16} />
+                {locating ? t('form.locating') : t('form.useLocation')}
+              </button>
+              <span className={cx('small', located ? 'locate-row__ok' : 'muted')} role="status">
+                {located ? <><Icon name="check" size={14} />{t('form.located')}</> : t('form.locateHint')}
+              </span>
+            </div>
+          </>
+        )}
+
+        {step === 1 && (
+          <>
+            <Field label={t('form.price')} required invalid={invalid} hint={l.price > 0 ? money(l.price) : undefined}>
+              <input type="number" inputMode="numeric" min={0} step={50000} value={l.price || ''} onChange={(e) => set('price', Number(e.target.value))} placeholder="1500000" autoFocus />
+            </Field>
             <div className="field">
-              <span className="field__label">{t('form.coords')}</span>
-              <div className="map map--sm">
-                <iframe title={t('form.coords')} src={osmEmbed(l.lat, l.lng, 0.006, true)} loading="lazy" />
-              </div>
-              <div className="form__row form__row--3">
-                <Field label={t('form.lat')}>
-                  <input type="number" step="0.00001" value={l.lat} onChange={(e) => set('lat', Number(e.target.value))} />
-                </Field>
-                <Field label={t('form.lng')}>
-                  <input type="number" step="0.00001" value={l.lng} onChange={(e) => set('lng', Number(e.target.value))} />
-                </Field>
-                <button type="button" className="btn btn--outline form__locate" onClick={locate} disabled={locating}>
-                  <Icon name="locate" size={16} />
-                  {locating ? t('form.locating') : t('form.useLocation')}
-                </button>
+              <span className="field__label">{t('form.roomType')}</span>
+              <div className="choice-cards">
+                {(['private', 'shared', 'studio'] as RoomType[]).map((r) => (
+                  <button type="button" key={r} className={cx('choice-card', l.roomType === r && 'is-active')} onClick={() => set('roomType', r)} aria-pressed={l.roomType === r}>
+                    <Icon name={r === 'shared' ? 'users' : r === 'studio' ? 'home' : 'bed'} size={22} />
+                    {t(`room.${r}`)}
+                  </button>
+                ))}
               </div>
             </div>
+            <div className="form__row">
+              <Stepper label={t('form.spots')} value={l.spots} min={1} max={10} onChange={(v) => set('spots', v)} />
+              <div className="field">
+                <span className="field__label">{t('form.gender')}</span>
+                <div className="chips">
+                  {(['any', 'male', 'female'] as Gender[]).map((g) => (
+                    <Chip key={g} active={l.gender === g} onClick={() => set('gender', g)}>{t(`gender.${g}`)}</Chip>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <Field label={t('form.origin')} hint={t('form.originHint')}>
+              <select value={l.origin ?? ''} onChange={(e) => set('origin', e.target.value || null)}>
+                <option value="">{t('form.originNone')}</option>
+                {REGIONS.map((r) => <option key={r.id} value={r.id}>{r.name[lang]}</option>)}
+              </select>
+            </Field>
+            <Toggle checked={l.utilitiesIncluded} onChange={(v) => set('utilitiesIncluded', v)} label={<><Icon name="bolt" size={16} />{t('form.utilities')}</>} />
           </>
         )}
 
         {step === 2 && (
-          <>
-            <div className="form__row form__row--4">
-              <Field label={t('form.rooms')}><Stepper value={l.rooms} min={1} max={10} onChange={(v) => set('rooms', v)} /></Field>
-              <Field label={t('form.area')}><input type="number" min={5} value={l.area} onChange={(e) => set('area', Number(e.target.value))} /></Field>
-              <Field label={t('form.floor')}><input type="number" min={0} value={l.floor} onChange={(e) => set('floor', Number(e.target.value))} /></Field>
-              <Field label={t('form.floors')}><input type="number" min={1} value={l.floors} onChange={(e) => set('floors', Number(e.target.value))} /></Field>
-            </div>
-            <Field label={t('form.available')}>
-              <input type="date" value={l.availableFrom} onChange={(e) => set('availableFrom', e.target.value)} />
-            </Field>
-            <div className="field">
-              <span className="field__label">{t('form.amenities')}</span>
-              <div className="check-grid">
-                {AMENITIES.map((a) => (
-                  <label key={a} className={cx('check', l.amenities.includes(a) && 'is-active')}>
-                    <input type="checkbox" checked={l.amenities.includes(a)} onChange={() => set('amenities', toggleIn(l.amenities, a))} />
-                    <span className="check__box"><Icon name="check" size={14} /></span>
-                    {t(`am.${a}`)}
-                  </label>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
-
-        {step === 3 && (
-          <>
-            <div className="field">
-              <span className="field__label">{t('form.gender')}</span>
-              <div className="chips">
-                {(['any', 'male', 'female'] as Gender[]).map((g) => (
-                  <Chip key={g} active={l.gender === g} onClick={() => set('gender', g)}>{t(`gender.${g}`)}</Chip>
-                ))}
-              </div>
-            </div>
-            <div className="field">
-              <span className="field__label">{t('form.audience')}</span>
-              <div className="chips">
-                {(['students', 'workers', 'family'] as Audience[]).map((a) => (
-                  <Chip key={a} active={l.audience.includes(a)} onClick={() => set('audience', toggleIn(l.audience, a))}>{t(`aud.${a}`)}</Chip>
-                ))}
-              </div>
-            </div>
-            <div className="form__toggles">
-              <Toggle checked={l.smoking} onChange={(v) => set('smoking', v)} label={<><Icon name="smoke" size={16} />{t('form.smoking')}</>} />
-              <Toggle checked={l.pets} onChange={(v) => set('pets', v)} label={<><Icon name="paw" size={16} />{t('form.pets')}</>} />
-            </div>
-            <div className="field">
-              <span className="field__label">{t('form.housemates')}</span>
-              {l.housemates.map((m, i) => (
-                <div key={i} className="mate-row">
-                  <input placeholder={t('form.mateName')} value={m.name} onChange={(e) => set('housemates', l.housemates.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} />
-                  <input type="number" placeholder={t('form.mateAge')} value={m.age || ''} onChange={(e) => set('housemates', l.housemates.map((x, j) => (j === i ? { ...x, age: Number(e.target.value) } : x)))} />
-                  <input placeholder={t('form.mateOcc')} value={m.occupation} onChange={(e) => set('housemates', l.housemates.map((x, j) => (j === i ? { ...x, occupation: e.target.value } : x)))} />
-                  <button type="button" className="icon-btn icon-btn--danger" onClick={() => set('housemates', l.housemates.filter((_, j) => j !== i))} aria-label={t('form.remove')}>
-                    <Icon name="trash" size={17} />
-                  </button>
-                </div>
-              ))}
-              {l.housemates.length < 6 && (
-                <button type="button" className="btn btn--outline btn--sm" onClick={() => set('housemates', [...l.housemates, { name: '', age: 0, occupation: '' }])}>
-                  <Icon name="plus" size={16} />
-                  {t('form.addMate')}
-                </button>
-              )}
-            </div>
-          </>
-        )}
-
-        {step === 4 && (
           <>
             <div className="field">
               <span className="field__label">{t('form.photos')}</span>
@@ -349,58 +258,84 @@ function ListingEditor({ id, userId, phone, lang }: { id: string | null; userId:
               </div>
               <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => { addPhotos(e.target.files); e.target.value = ''; }} />
             </div>
-            <div className="form__row">
-              <Field label={t('form.price')} required invalid={invalid && l.price <= 0} hint={l.price > 0 ? money(l.price) : undefined}>
-                <input type="number" min={0} step={50000} value={l.price || ''} onChange={(e) => set('price', Number(e.target.value))} placeholder="1500000" />
-              </Field>
-              <Field label={t('form.deposit')}>
-                <input type="number" min={0} step={50000} value={l.deposit || ''} onChange={(e) => set('deposit', Number(e.target.value))} placeholder="0" />
-              </Field>
+            <Field label={t('form.description')}>
+              <textarea rows={4} value={descText} onChange={(e) => set('description', e.target.value)} placeholder={t('form.descriptionPh')} />
+            </Field>
+            <div className="field">
+              <span className="field__label">{t('form.extras')}</span>
+              <div className="chips">
+                {EXTRAS.filter((a) => a !== 'metro' || city.metro.length > 0).map((a) => (
+                  <Chip key={a} active={l.amenities.includes(a)} onClick={() => set('amenities', toggleIn(l.amenities, a))}>{t(`am.${a}`)}</Chip>
+                ))}
+              </div>
             </div>
-            <Toggle checked={l.utilitiesIncluded} onChange={(v) => set('utilitiesIncluded', v)} label={<><Icon name="bolt" size={16} />{t('form.utilities')}</>} />
-            <p className="tip tip--plain">
-              <Icon name="phone" size={18} />
-              <span>{t('form.contactNote', { phone: formatPhone(phone) })}</span>
-            </p>
+            {user?.phoneVerified && user.phone && (
+              <p className="tip tip--plain">
+                <Icon name="phone" size={18} />
+                <span>{t('form.contactNote', { phone: formatPhone(user.phone) })}</span>
+              </p>
+            )}
           </>
         )}
 
         {invalid && <p className="form__error" role="alert"><Icon name="info" size={16} />{t('form.required')}</p>}
         {saveError && <p className="form__error" role="alert"><Icon name="info" size={16} />{t('form.saveError')}</p>}
 
-        <div className="form__actions">
-          {step > 0 ? (
-            <button type="button" className="btn btn--ghost" onClick={() => { setStep(step - 1); setError(false); }}>
-              <Icon name="chevronLeft" size={16} />
-              {t('form.back')}
+        {verifying ? (
+          <div className="verify verify--inline">
+            <h3>{t('form.verifyTitle')}</h3>
+            <p className="muted">{t('verify.d')}</p>
+            <PhoneVerify onDone={() => { setVerifying(false); save(); }} />
+          </div>
+        ) : (
+          <div className="form__actions">
+            {step > 0 ? (
+              <button type="button" className="btn btn--ghost" onClick={() => { setStep(step - 1); setError(false); }}>
+                <Icon name="chevronLeft" size={16} />
+                {t('form.back')}
+              </button>
+            ) : <span />}
+            <button type="submit" className={cx('btn btn--lg', last ? 'btn--accent' : 'btn--dark')} disabled={saving}>
+              {saving ? t('form.saving') : last ? (id ? t('form.saveChanges') : t('form.publish')) : t('form.next')}
+              {!last && <Icon name="arrowRight" size={16} />}
             </button>
-          ) : <span />}
-          <button type="submit" className={cx('btn btn--lg', step === STEPS.length - 1 ? 'btn--lime' : 'btn--dark')} disabled={saving}>
-            {saving ? t('form.saving') : step === STEPS.length - 1 ? (id ? t('form.saveChanges') : t('form.publish')) : t('form.next')}
-            {step < STEPS.length - 1 && <Icon name="arrowRight" size={16} />}
-          </button>
-        </div>
+          </div>
+        )}
       </form>
     </>
   );
 }
 
 function Field({ label, hint, required, invalid, children }: { label: string; hint?: string; required?: boolean; invalid?: boolean; children: ReactNode }) {
+  const hintId = useId();
+  // Tell assistive tech about required/invalid state and the hint, not just the visual cues.
+  const control = isValidElement<Record<string, unknown>>(children)
+    ? cloneElement(children, {
+        'aria-required': required || undefined,
+        'aria-invalid': invalid || undefined,
+        'aria-describedby': hint ? hintId : undefined,
+      })
+    : children;
   return (
     <label className={cx('input', invalid && 'is-invalid')}>
-      <span>{label}{required && <em> *</em>}</span>
-      {children}
-      {hint && <small className="muted">{hint}</small>}
+      <span>{label}{required && <em aria-hidden="true"> *</em>}</span>
+      {control}
+      {hint && <small id={hintId} className="muted">{hint}</small>}
     </label>
   );
 }
 
-function Stepper({ value, min, max, onChange }: { value: number; min: number; max: number; onChange: (v: number) => void }) {
+function Stepper({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (v: number) => void }) {
+  const { t } = useI18n();
+  const labelId = useId();
   return (
-    <span className="num-stepper">
-      <button type="button" onClick={() => onChange(Math.max(min, value - 1))} disabled={value <= min} aria-label="−">−</button>
-      <strong>{value}</strong>
-      <button type="button" onClick={() => onChange(Math.min(max, value + 1))} disabled={value >= max} aria-label="+">+</button>
-    </span>
+    <div className="input" role="group" aria-labelledby={labelId}>
+      <span id={labelId}>{label}</span>
+      <span className="num-stepper">
+        <button type="button" onClick={() => onChange(Math.max(min, value - 1))} disabled={value <= min} aria-label={`${t('a11y.decrease')}: ${label}`}>−</button>
+        <strong aria-live="polite">{value}</strong>
+        <button type="button" onClick={() => onChange(Math.min(max, value + 1))} disabled={value >= max} aria-label={`${t('a11y.increase')}: ${label}`}>+</button>
+      </span>
+    </div>
   );
 }

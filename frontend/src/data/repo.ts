@@ -73,23 +73,19 @@ const supabaseRepo = (): Repo => {
       );
     },
     async getDraft(id) {
-      const r = ok(await sb.from('listings').select(`${LISTING_COLUMNS}, listing_private(address, lat, lng)`).eq('id', id).maybeSingle()) as Row | null;
+      const r = ok(await sb.from('listings').select(`${LISTING_COLUMNS}, address, lat, lng`).eq('id', id).maybeSingle()) as Row | null;
       if (!r) return null;
-      const priv = Array.isArray(r.listing_private) ? r.listing_private[0] : r.listing_private;
-      return { id: r.id, ...rowToFields(r), address: priv?.address ?? '', lat: priv?.lat ?? 0, lng: priv?.lng ?? 0 };
+      return { id: r.id, ...rowToFields(r), address: r.address, lat: r.lat, lng: r.lng };
     },
     async saveListing(userId, draft) {
       const photos = await uploadPhotos(userId, draft.photos);
       const row = { ...draftToRow(draft), photos };
-      let id = draft.id;
-      if (id) {
-        ok(await sb.from('listings').update(row).eq('id', id));
-      } else {
-        const created = ok(await sb.from('listings').insert({ ...row, owner_id: userId }).select('id').single()) as { id: string };
-        id = created.id;
+      if (draft.id) {
+        ok(await sb.from('listings').update(row).eq('id', draft.id));
+        return draft.id;
       }
-      ok(await sb.from('listing_private').upsert({ listing_id: id, address: draft.address.trim(), lat: draft.lat, lng: draft.lng }));
-      return id;
+      const created = ok(await sb.from('listings').insert({ ...row, owner_id: userId }).select('id').single()) as { id: string };
+      return created.id;
     },
     async deleteListing(id) {
       ok(await sb.from('listings').delete().eq('id', id));

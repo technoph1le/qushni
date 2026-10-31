@@ -1,4 +1,4 @@
-import { env } from '../env';
+import { env } from '../env.js';
 
 export async function tg<T = unknown>(method: string, body: Record<string, unknown>): Promise<T> {
   const res = await fetch(`https://api.telegram.org/bot${env.telegram.token}/${method}`, {

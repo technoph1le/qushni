@@ -12,6 +12,12 @@ const config: NextConfig = {
   poweredByHeader: false,
   // Lets teammates open the dev server through a Cloudflare quick tunnel (npm run dev).
   allowedDevOrigins: ['*.trycloudflare.com'],
+  // The API lives in ../backend. Proxying /api/* keeps one origin: no CORS, and Telegram and the
+  // payment providers can keep calling https://<site>/api/... .
+  async rewrites() {
+    const api = (process.env.API_URL || 'http://localhost:8787').replace(/\/$/, '');
+    return [{ source: '/api/:path*', destination: `${api}/api/:path*` }];
+  },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];
   },

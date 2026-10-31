@@ -1,10 +1,10 @@
 import { Hono } from 'hono';
-import { clickEnabled, env, paymeEnabled } from '../env';
-import { clickCheckoutUrl, handleClick } from '../payments/click';
-import { checkPaymeAuth, handlePayme, paymeCheckoutUrl } from '../payments/payme';
-import { supabaseRepo } from '../payments/repo';
-import { db, userFromRequest } from '../lib/supabase';
-import { siteOrigin } from '../lib/origin';
+import { clickEnabled, env, paymeEnabled } from '../env.js';
+import { clickCheckoutUrl, handleClick } from '../payments/click.js';
+import { checkPaymeAuth, handlePayme, paymeCheckoutUrl } from '../payments/payme.js';
+import { supabaseRepo } from '../payments/repo.js';
+import { db, userFromRequest } from '../lib/supabase.js';
+import { siteOrigin } from '../lib/origin.js';
 
 export const payments = new Hono();
 

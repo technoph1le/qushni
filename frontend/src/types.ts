@@ -4,7 +4,6 @@ export type LocalizedText = string | Record<Lang, string>;
 
 export type RoomType = 'private' | 'shared' | 'studio';
 export type Gender = 'male' | 'female' | 'any';
-export type Audience = 'students' | 'workers' | 'family';
 export type ListingStatus = 'active' | 'paused' | 'blocked';
 
 export type Amenity =
@@ -23,36 +22,22 @@ export type Amenity =
   | 'tv'
   | 'security';
 
-export interface Housemate {
-  name: string;
-  age: number;
-  occupation: string;
-}
-
-/** Fields everyone can see. Exact address and phone are never part of it. */
+/** Fields everyone can see. Exact address and phone are never part of it. Only price is required from the host. */
 export interface ListingFields {
+  /** Optional; the site shows the room type when it's empty (see listingTitle). */
   title: LocalizedText;
   description: LocalizedText;
   city: string;
   district: string;
-  metro: { station: string; minutes: number } | null;
-  centre: boolean;
+  metro: string | null; // nearest station, in cities that have a metro
   roomType: RoomType;
   price: number; // UZS per person per month
-  deposit: number;
   utilitiesIncluded: boolean;
   spots: number;
-  rooms: number;
-  area: number;
-  floor: number;
-  floors: number;
-  availableFrom: string; // YYYY-MM-DD
   amenities: Amenity[];
   gender: Gender;
-  audience: Audience[];
-  smoking: boolean;
-  pets: boolean;
-  housemates: Housemate[];
+  /** Region the people living here are from (REGIONS id), so visitors can find compatriots. */
+  origin: string | null;
   photos: string[];
   status: ListingStatus;
 }

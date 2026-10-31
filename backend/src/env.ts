@@ -1,6 +1,5 @@
-import 'server-only';
 
-// Values are read on first use, not at import time, so `next build` works without secrets present.
+// Values are read on first use, so the server starts (and tests run) without every secret present.
 function required(...keys: string[]): string {
   for (const key of keys) {
     const v = process.env[key];
@@ -12,9 +11,9 @@ function required(...keys: string[]): string {
 const optional = (key: string) => process.env[key] || '';
 
 export const env = {
-  // Vercel's Supabase integration provides SUPABASE_URL and SUPABASE_SECRET_KEY / SUPABASE_SERVICE_ROLE_KEY.
+  // The secret key: either the new sb_secret_… (SUPABASE_SECRET_KEY) or the legacy service_role key.
   get supabaseUrl() {
-    return required('SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL');
+    return required('SUPABASE_URL');
   },
   get supabaseServiceKey() {
     return required('SUPABASE_SECRET_KEY', 'SUPABASE_SERVICE_ROLE_KEY');

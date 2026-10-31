@@ -29,7 +29,7 @@ export function Providers({ lang, children }: { lang: Lang; children: ReactNode 
         <h1>Qo&apos;shni</h1>
         <p className="muted">
           Configuration error: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are missing. Set them
-          (Vercel → Settings → Environment Variables, or .env.local) and redeploy.
+          (Vercel → Settings → Environment Variables, or frontend/.env.local) and redeploy.
         </p>
       </div>
     );

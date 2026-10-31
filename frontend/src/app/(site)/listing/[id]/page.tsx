@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { cityName, districtName } from '../../../../data/places';
 import { fetchPublicListing } from '../../../../data/server';
-import { getServerLang } from '../../../../i18n/server';
+import { getServerLang, serverT } from '../../../../i18n/server';
+import { listingTitle } from '../../../../features/listings/title';
 import type { LocalizedText } from '../../../../types';
 import { ListingPage } from '../../../../views/ListingPage';
 
@@ -17,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const listing = await fetchPublicListing(id);
   if (!listing) return { title: "E'lon topilmadi", robots: { index: false } };
   const lang = await getServerLang();
-  const title = text(listing.title, lang);
+  const title = listingTitle(listing, (v) => text(v, lang), (k) => serverT(lang, k));
   const place = `${districtName(listing.city, listing.district, lang)}, ${cityName(listing.city, lang)}`;
   const price = `${new Intl.NumberFormat('ru-RU').format(listing.price).replace(/ /g, ' ')} so'm`;
   const description = `${price} · ${place}. ${text(listing.description, lang).slice(0, 150)}`.trim();

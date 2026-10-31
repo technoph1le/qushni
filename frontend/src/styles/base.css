@@ -1,18 +1,28 @@
+/* Brand typeface. Licensed files go in public/fonts/aeonik/; until they're there, Manrope is used.
+   Aeonik has no Cyrillic, so Russian text falls back to Manrope glyph by glyph. */
+@font-face { font-family: 'Aeonik'; font-weight: 400; font-style: normal; font-display: swap; src: local('Aeonik Regular'), local('Aeonik-Regular'), url('/fonts/aeonik/Aeonik-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'Aeonik'; font-weight: 500; font-style: normal; font-display: swap; src: local('Aeonik Medium'), local('Aeonik-Medium'), url('/fonts/aeonik/Aeonik-Medium.woff2') format('woff2'); }
+@font-face { font-family: 'Aeonik'; font-weight: 600 800; font-style: normal; font-display: swap; src: local('Aeonik Bold'), local('Aeonik-Bold'), url('/fonts/aeonik/Aeonik-Bold.woff2') format('woff2'); }
+@font-face { font-family: 'Aeonik'; font-weight: 900; font-style: normal; font-display: swap; src: local('Aeonik Black'), local('Aeonik-Black'), url('/fonts/aeonik/Aeonik-Black.woff2') format('woff2'); }
+
 :root {
-  --navy: #0f1f3d;
-  --navy-2: #1a2d52;
+  /* Brand palette */
+  --primary: #00006e;
+  --primary-2: #14148c; /* hover */
+  --accent: #ff6200; /* decorative and large shapes only — white text on it is 3:1 */
+  --accent-strong: #c24a00; /* accent fills that carry text: white on it is 4.9:1 */
+  --accent-strong-2: #a83f00; /* hover */
+  --secondary: #333dec;
+  --secondary-soft: #ebecfd;
   --ink: #111827;
   --text: #344054;
   --muted: #5b6475;
   --line: #e5e7eb;
   --line-2: #eef0f3;
+  --line-strong: #858b98; /* form-control borders: ≥3:1 on white and soft backgrounds (WCAG 1.4.11) */
   --bg: #ffffff;
   --bg-soft: #f5f6f8;
-  --bg-tint: #eef3ff;
-  --blue: #2f5bea;
-  --blue-soft: #e8eeff;
-  --lime: #c8f169;
-  --lime-dark: #9fcc35;
+  --bg-tint: #f0f1fe;
   --green: #0f7a3d; /* darkened for readable text contrast */
   --green-soft: #e7f7ee;
   --pink: #b42d62;
@@ -21,7 +31,7 @@
   --radius: 14px;
   --radius-lg: 20px;
   --shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 4px 16px rgba(16, 24, 40, 0.06);
-  --font: var(--font-manrope), 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font: 'Aeonik', var(--font-manrope), 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -30,21 +40,25 @@ body {
   margin: 0;
   font-family: var(--font);
   font-size: 15px;
-  line-height: 1.5;
+  line-height: 1.6;
   color: var(--text);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
 }
-h1, h2, h3 { color: var(--ink); margin: 0; line-height: 1.15; letter-spacing: -0.02em; }
+h1, h2, h3 { color: var(--ink); margin: 0; line-height: 1.2; letter-spacing: -0.01em; }
 p { margin: 0; }
 a { color: inherit; text-decoration: none; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; background: none; border: 0; padding: 0; }
 img { display: block; max-width: 100%; }
-:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--secondary); outline-offset: 2px; }
+/* On dark surfaces the focus ring switches to white so it stays visible. */
+.searchbar :focus-visible, .section--how :focus-visible, .skip-link:focus-visible { outline-color: #fff; }
+::placeholder { color: var(--muted); opacity: 1; }
 
-.container { width: 100%; max-width: 1240px; margin: 0 auto; padding: 0 16px; }
-@media (min-width: 768px) { .container { padding: 0 24px; } }
+.container { width: 100%; max-width: 1360px; margin: 0 auto; padding: 0 16px; }
+@media (min-width: 768px) { .container { padding: 0 32px; } }
+@media (min-width: 1280px) { .container { padding: 0 48px; } }
 
 .muted { color: var(--muted); }
 .small { font-size: 13px; }
@@ -54,7 +68,7 @@ img { display: block; max-width: 100%; }
 /* ---------- Accessibility ---------- */
 .skip-link {
   position: absolute; left: 16px; top: -60px; z-index: 100;
-  padding: 10px 16px; border-radius: 10px; background: var(--navy); color: #fff; font-weight: 700;
+  padding: 10px 16px; border-radius: 10px; background: var(--primary); color: #fff; font-weight: 700;
 }
 .skip-link:focus { top: 12px; }
 main:focus { outline: none; }

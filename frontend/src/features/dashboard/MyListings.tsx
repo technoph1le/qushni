@@ -10,6 +10,7 @@ import { repo } from '../../data/repo';
 import { reloadListings } from '../../data/useListings';
 import { useI18n } from '../../i18n';
 import type { Listing } from '../../types';
+import { listingTitle } from '../listings/title';
 import { cx } from '../../lib/utils';
 
 
@@ -66,7 +67,7 @@ export function MyListingsTable({ list, reload }: { list: Listing[] | null; relo
         <Icon name="home" size={28} />
         <strong>{t('dash.empty')}</strong>
         <span className="muted">{t('dash.emptyHint')}</span>
-        <Link href="/dashboard/new" className="btn btn--lime">
+        <Link href="/dashboard/new" className="btn btn--accent">
           <Icon name="plus" size={16} />
           {t('nav.post')}
         </Link>
@@ -89,7 +90,7 @@ export function MyListingsTable({ list, reload }: { list: Listing[] | null; relo
             <Link href={`/listing/${l.id}`} className="mylist__item">
               <Photo src={l.photos[0]} alt="" className="mylist__thumb" />
               <span>
-                <strong>{lt(l.title)}</strong>
+                <strong>{listingTitle(l, lt, t)}</strong>
                 <small className="muted">{districtName(l.city, l.district, lang)} · {t(`room.${l.roomType}`)}</small>
               </span>
             </Link>

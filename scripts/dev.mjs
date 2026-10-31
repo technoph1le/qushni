@@ -1,5 +1,5 @@
-// `npm run dev` — starts Next.js and (if cloudflared is installed) a public tunnel.
-// The tunnel link can be shared with teammates, and the Telegram bot in .env.local is pointed at it
+// `npm run dev` — starts the backend, the frontend and (if cloudflared is installed) a public tunnel.
+// The tunnel link can be shared with teammates, and the Telegram bot in backend/.env is pointed at it
 // automatically, so phone sign-in works locally. `npm run dev -- --no-tunnel` skips the tunnel.
 import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -8,11 +8,13 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 5173;
+const frontend = path.join(root, 'frontend');
+const backend = path.join(root, 'backend');
 const withTunnel = !process.argv.includes('--no-tunnel');
 const isWin = process.platform === 'win32';
 const children = [];
 
-const color = { next: '\x1b[36m', tunnel: '\x1b[33m', dev: '\x1b[32m', reset: '\x1b[0m' };
+const color = { web: '\x1b[36m', api: '\x1b[35m', tunnel: '\x1b[33m', dev: '\x1b[32m', reset: '\x1b[0m' };
 const log = (tag, line) => console.log(`${color[tag]}[${tag}]${color.reset} ${line}`);
 
 function readEnv(file) {
@@ -27,13 +29,13 @@ function readEnv(file) {
 
 let shuttingDown = false;
 
-function run(tag, command, args, onLine) {
+function run(tag, cwd, command, args, onLine) {
   const env = { ...process.env, FORCE_COLOR: '1' };
   // On Windows npx is a .cmd script and needs a shell; pass one quoted command line to it.
   const quote = (s) => (/\s/.test(s) ? `"${s}"` : s);
   const child = isWin
-    ? spawn([command, ...args].map(quote).join(' '), { cwd: root, shell: true, env })
-    : spawn(command, args, { cwd: root, env });
+    ? spawn([command, ...args].map(quote).join(' '), { cwd, shell: true, env })
+    : spawn(command, args, { cwd, env });
   children.push(child);
   const pipe = (stream) => {
     let buf = '';
@@ -77,9 +79,9 @@ async function waitFor(url, seconds) {
 }
 
 async function pointBotAt(tunnelUrl) {
-  const env = readEnv(path.join(root, '.env.local'));
+  const env = readEnv(path.join(backend, '.env'));
   if (!env?.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_WEBHOOK_SECRET) {
-    log('dev', 'Telegram bot not configured in .env.local — phone sign-in is off.');
+    log('dev', 'Telegram bot not configured in backend/.env — phone sign-in is off.');
     return;
   }
   const webhook = `${tunnelUrl}/api/telegram/webhook`;
@@ -119,20 +121,21 @@ process.on('SIGTERM', shutdown);
 
 // ---------------------------------------------------------------- start
 
-if (!fs.existsSync(path.join(root, 'node_modules'))) {
+if (!fs.existsSync(path.join(frontend, 'node_modules')) || !fs.existsSync(path.join(backend, 'node_modules'))) {
   console.error('Dependencies are missing. Run "npm run setup" first.');
   process.exit(1);
 }
-if (!fs.existsSync(path.join(root, '.env.local'))) {
-  console.error('.env.local is missing. Run "npm run setup" first, then fill it in (docs/SETUP.md).');
+if (!fs.existsSync(path.join(frontend, '.env.local')) || !fs.existsSync(path.join(backend, '.env'))) {
+  console.error('frontend/.env.local or backend/.env is missing. Run "npm run setup" first, then fill them in (GUIDE.md).');
   process.exit(1);
 }
 
-run('next', 'npx', ['next', 'dev', '-p', String(PORT)]);
+run('api', backend, 'npm', ['run', 'dev']);
+run('web', frontend, 'npx', ['next', 'dev', '-p', String(PORT)]);
 
-// The API route compiles on first request, so this also warms it up.
+// Goes through the frontend's /api proxy, so this checks both servers are up.
 if (!(await waitFor(`http://localhost:${PORT}/api/health`, 90))) {
-  log('dev', `Next.js did not start on port ${PORT} — check the [next] lines above.`);
+  log('dev', `The site did not answer on port ${PORT} — check the [web] and [api] lines above.`);
 }
 
 let shareUrl = null;
@@ -153,7 +156,7 @@ if (withTunnel) {
             resolve();
           }
         };
-        const tunnel = run('tunnel', cloudflared, ['tunnel', '--no-autoupdate', '--url', `http://localhost:${PORT}`], (line) => {
+        const tunnel = run('tunnel', root, cloudflared, ['tunnel', '--no-autoupdate', '--url', `http://localhost:${PORT}`], (line) => {
           // Error lines mention api.trycloudflare.com, which is Cloudflare's service, not our link.
           const url = /failed|error/i.test(line) ? undefined : line.match(/https:\/\/(?!api\.)[a-z0-9-]+\.trycloudflare\.com/)?.[0];
           if (url && !shareUrl) {

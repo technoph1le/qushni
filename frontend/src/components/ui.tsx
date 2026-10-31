@@ -6,19 +6,12 @@ import { LANGS, useI18n } from '../i18n';
 import { cx } from '../lib/utils';
 import { Icon } from './Icon';
 
-export function Logo({ light }: { light?: boolean }) {
+export function Logo() {
   const { t } = useI18n();
   return (
-    <Link href="/" className={cx('logo', light && 'logo--light')} aria-label="Qo'shni">
-      <svg width="34" height="34" viewBox="0 0 32 32" aria-hidden="true">
-        <rect width="32" height="32" rx="9" fill={light ? '#c8f169' : '#0f1f3d'} />
-        <rect x="8" y="9" width="6" height="14" rx="2" fill={light ? '#0f1f3d' : '#c8f169'} />
-        <rect x="18" y="13" width="6" height="10" rx="2" fill={light ? '#0f1f3d' : '#c8f169'} />
-      </svg>
-      <span className="logo__text">
-        <strong>Qo'shni</strong>
-        <small>{t('brand.tagline')}</small>
-      </span>
+    <Link href="/" className="logo" aria-label="Qo'shni">
+      <img src="/logo-wordmark.svg" alt="" width={1194} height={440} className="logo__img" />
+      <small className="logo__tag">{t('brand.tagline')}</small>
     </Link>
   );
 }
@@ -34,6 +27,7 @@ export function LangSwitch() {
           className={cx('lang__btn', lang === l.id && 'is-active')}
           onClick={() => setLang(l.id)}
           title={l.label}
+          aria-label={l.label}
           lang={l.id}
           aria-pressed={lang === l.id}
         >
@@ -85,7 +79,7 @@ export function Photo({ src, alt, className }: { src?: string; alt: string; clas
   const [failed, setFailed] = useState(false);
   if (!src || failed) {
     return (
-      <div className={cx('photo photo--empty', className)} aria-label={alt}>
+      <div className={cx('photo photo--empty', className)} role="img" aria-label={alt}>
         <Icon name="home" size={36} />
       </div>
     );

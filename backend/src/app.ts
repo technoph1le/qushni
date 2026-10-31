@@ -1,12 +1,11 @@
-import 'server-only';
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
-import { rateLimit } from './lib/rateLimit';
-import { auth } from './routes/auth';
-import { payments } from './routes/payments';
-import { telegramWebhook } from './routes/telegramWebhook';
+import { rateLimit } from './lib/rateLimit.js';
+import { auth } from './routes/auth.js';
+import { payments } from './routes/payments.js';
+import { telegramWebhook } from './routes/telegramWebhook.js';
 
-/** Everything under /api — served by src/app/api/[[...route]]/route.ts. */
+/** Everything under /api. src/index.ts serves it; the frontend proxies /api/* here. */
 export const api = new Hono().basePath('/api');
 const TEN_MIN = 10 * 60;
 

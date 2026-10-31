@@ -33,7 +33,7 @@ export function PlanOptions({ onPick, compact }: { onPick?: (p: Plan) => void; c
             </ul>
           )}
           {access.paywallOn && onPick ? (
-            <button className={cx('btn btn--block', p.popular ? 'btn--lime' : 'btn--outline')} onClick={() => onPick(p)}>
+            <button className={cx('btn btn--block', p.popular ? 'btn--accent' : 'btn--outline')} onClick={() => onPick(p)}>
               {t('plans.buy')}
             </button>
           ) : (
@@ -95,7 +95,7 @@ export function PayModal({ plan, onClose }: { plan: Plan; onClose: () => void })
               ))}
             </div>
             {error && <p className="form__error" role="alert"><Icon name="info" size={16} />{error}</p>}
-            <button className="btn btn--lime btn--block btn--lg" onClick={pay} disabled={busy}>
+            <button className="btn btn--accent btn--block btn--lg" onClick={pay} disabled={busy}>
               {!user ? t('pay.loginFirst') : busy ? t('pay.redirecting') : t('pay.confirm', { v: money(plan.price) })}
             </button>
           </>

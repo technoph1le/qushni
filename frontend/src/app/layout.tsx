@@ -7,7 +7,7 @@ import { Providers } from './providers';
 import '../styles/index.css';
 
 const manrope = Manrope({
-  subsets: ['latin', 'cyrillic'],
+  subsets: ['latin', 'latin-ext', 'cyrillic'],
   weight: ['400', '500', '600', '700', '800'],
   variable: '--font-manrope',
   display: 'swap',
@@ -32,15 +32,16 @@ export const metadata: Metadata = {
   twitter: { card: 'summary_large_image' },
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: '48x48' },
-      { url: '/favicon.svg', type: 'image/svg+xml' },
+      // ?v= busts browsers' favicon cache; bump it whenever the icons change.
+      { url: '/favicon.ico?v=2', sizes: '16x16 32x32 48x48' },
+      { url: '/favicon.svg?v=2', type: 'image/svg+xml' },
     ],
-    apple: '/apple-touch-icon.png',
+    apple: '/apple-touch-icon.png?v=2',
   },
-  manifest: '/site.webmanifest',
+  manifest: '/site.webmanifest?v=2',
 };
 
-export const viewport: Viewport = { themeColor: '#0f1f3d' };
+export const viewport: Viewport = { themeColor: '#00006E' };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const lang = await getServerLang();

@@ -1,7 +1,7 @@
 // Click SHOP API: Click calls Prepare (action=0) then Complete (action=1).
 // Docs: https://docs.click.uz/click-api-request/
 import { createHash } from 'node:crypto';
-import type { PaymentRepo } from './repo';
+import type { PaymentRepo } from './repo.js';
 
 const md5 = (s: string) => createHash('md5').update(s).digest('hex');
 

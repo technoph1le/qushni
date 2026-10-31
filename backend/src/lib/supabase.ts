@@ -1,7 +1,6 @@
-import 'server-only';
 import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js';
 import type { Context } from 'hono';
-import { env } from '../env';
+import { env } from '../env.js';
 
 let client: SupabaseClient | null = null;
 

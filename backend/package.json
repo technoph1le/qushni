@@ -1,0 +1,27 @@
+{
+  "name": "qoshni-backend",
+  "private": true,
+  "description": "Qo'shni API: Telegram sign-in and Payme/Click payments.",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch --import tsx --env-file-if-exists=.env src/index.ts",
+    "build": "tsc",
+    "start": "node --env-file-if-exists=.env dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/**/*.test.ts",
+    "telegram:webhook": "tsx --env-file-if-exists=.env scripts/set-webhook.ts"
+  },
+  "engines": {
+    "node": ">=20.9"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.14.0",
+    "@supabase/supabase-js": "^2.118.0",
+    "hono": "^4.13.14"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, it } from 'node:test';
-import { clickSign, handleClick } from './click';
-import { checkPaymeAuth, handlePayme } from './payme';
-import type { ClickTx, Order, PaymentRepo, PaymeTx } from './repo';
+import { clickSign, handleClick } from './click.js';
+import { checkPaymeAuth, handlePayme } from './payme.js';
+import type { ClickTx, Order, PaymentRepo, PaymeTx } from './repo.js';
 
 function memoryRepo() {
   const orders = new Map<number, Order>();
