@@ -60,17 +60,36 @@ await writeFile(pub('icon-512.png'), await png(squareSvg, 512));
 await writeFile(pub('apple-touch-icon.png'), await onTile(180, 0.72));
 await writeFile(pub('icon-maskable-512.png'), await onTile(512, 0.6)); // inside the 80% safe zone
 
-// 1200×630 link preview: wordmark on white, tagline below.
-const wm = await sharp(Buffer.from(wordmarkSvg), { density: 300 }).resize({ width: 640 }).png().toBuffer();
-const { height: wmH } = await sharp(wm).metadata();
+// 1200×630 link preview: wordmark, headline and cities on the left; the mark on a navy panel on the right.
+const wm = await sharp(Buffer.from(wordmarkSvg), { density: 300 }).resize({ width: 300 }).png().toBuffer();
+const bigMark = await sharp(Buffer.from(markSvg), { density: 300 }).resize(300, 300, { fit: 'contain', background: '#0000' }).png().toBuffer();
+const chips = ['Toshkent', 'Samarqand', 'Buxoro', '+11 shahar'];
+let chipX = 80;
+const chipSvg = chips
+  .map((c) => {
+    const w = Math.round(c.length * 14.5 + 40);
+    const out = `<rect x="${chipX}" y="452" width="${w}" height="52" rx="26" fill="#EEF0FF"/><text x="${chipX + w / 2}" y="486" font-size="24" font-weight="600" fill="${NAVY}" text-anchor="middle">${c}</text>`;
+    chipX += w + 12;
+    return out;
+  })
+  .join('');
 const text = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630">
   <style>text { font-family: 'Segoe UI', Arial, sans-serif; }</style>
-  <text x="96" y="${150 + wmH + 70}" font-size="44" font-weight="700" fill="${NAVY}">Sherik toping. Ijarani bo'lishing.</text>
-  <text x="96" y="${150 + wmH + 128}" font-size="28" fill="#5b6475">Toshkent · Samarqand · Buxoro · vositachisiz</text>
-  <rect x="0" y="618" width="1200" height="12" fill="${ACCENT}"/>
+  <rect x="780" y="0" width="420" height="630" fill="${NAVY}"/>
+  <circle cx="990" cy="315" r="200" fill="#ffffff" fill-opacity="0.06"/>
+  <text x="80" y="262" font-size="66" font-weight="800" fill="${NAVY}" letter-spacing="-1">Ijarani sherik</text>
+  <text x="80" y="338" font-size="66" font-weight="800" fill="${NAVY}" letter-spacing="-1">bilan bo'lishing.</text>
+  <text x="80" y="398" font-size="28" fill="#4a5163">Viloyatdoshingiz yashayotgan xonalarni toping.</text>
+  ${chipSvg}
+  <text x="80" y="574" font-size="24" font-weight="700" fill="#C24A00">qoshni.uz</text>
+  <rect x="0" y="618" width="780" height="12" fill="${ACCENT}"/>
 </svg>`);
 const og = await sharp({ create: { width: 1200, height: 630, channels: 4, background: '#ffffff' } })
-  .composite([{ input: wm, left: 84, top: 120 }, { input: text, left: 0, top: 0 }])
+  .composite([
+    { input: text, left: 0, top: 0 },
+    { input: wm, left: 72, top: 60 },
+    { input: bigMark, left: 840, top: 165 },
+  ])
   .png()
   .toBuffer();
 await writeFile(pub('og-image.png'), og);

@@ -1,7 +1,7 @@
 {
-  "name": "Qo'shni — sherik va xona toping",
+  "name": "Qo'shni — xona va sherik toping",
   "short_name": "Qo'shni",
-  "description": "O'zbekistonda sherik va xona topish platformasi. Mir2Dos mahsuloti.",
+  "description": "Ijaraga xona va sherik toping — viloyatdoshlaringiz yashayotgan xonalar birinchi. Mir2Dos mahsuloti.",
   "lang": "uz",
   "start_url": "/",
   "scope": "/",

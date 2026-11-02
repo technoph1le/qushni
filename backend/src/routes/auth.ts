@@ -108,7 +108,7 @@ auth.post('/telegram/verify', async (c) => {
     telegram_username: login.telegram_username,
   };
 
-  // Linking a phone to an account that signed up with Google.
+  // Linking a phone to an account that is already signed in but has no confirmed phone.
   if (login.user_id) {
     const conflict = await findOtherOwner(login.user_id, login.phone, login.telegram_id);
     if (conflict) return c.json({ error: 'phone_taken' }, 409);

@@ -11,7 +11,7 @@ Browser ──► frontend/ (Next.js, port 5173)
               ├─ /api/*  ──proxy──►  backend/ (Hono on Node, port 8787)
               │                        Telegram sign-in + bot webhook, Payme & Click callbacks
               │                        └──► Supabase with the SECRET key, Telegram Bot API
-              └─ Supabase directly with the PUBLIC key: listings, photos, Google sign-in
+              └─ Supabase directly with the PUBLIC key: listings, photos, sign-in sessions
 ```
 
 - Because the frontend proxies `/api/*`, the browser, Telegram and the payment providers only ever call `https://<site>/api/...`. Set `API_URL` on the frontend to wherever the backend runs.
@@ -43,8 +43,7 @@ Both are git-ignored; the `.env.example` next to each lists every variable. Join
 ### First-time setup of the services
 
 1. **Supabase** — new project, region Frankfurt. SQL Editor → run `backend/supabase/schema.sql`. Copy from Project Settings → API Keys: URL, publishable key (frontend), secret key (backend).
-2. **Google sign-in** — Google Cloud → Google Auth Platform → Web client. JS origin `http://localhost:5173`, redirect URI `https://<project>.supabase.co/auth/v1/callback`. Paste client ID/secret into Supabase → Authentication → Providers → Google. Supabase → Authentication → URL Configuration: Site URL `http://localhost:5173`; redirect URLs `http://localhost:5173/**` and `https://*.trycloudflare.com/**`.
-3. **Telegram dev bot** — @BotFather → `/newbot` (e.g. `qoshni_dev_bot`). Token and username go in `backend/.env`; `npm run setup` already generated `TELEGRAM_WEBHOOK_SECRET`. `npm run dev` points the bot at your tunnel automatically.
+2. **Telegram dev bot** — @BotFather → `/newbot` (e.g. `qoshni_dev_bot`). Token and username go in `backend/.env`; `npm run setup` already generated `TELEGRAM_WEBHOOK_SECRET`. `npm run dev` points the bot at your tunnel automatically.
 
 ## The database
 
@@ -88,6 +87,8 @@ scripts/          dev runner (both apps + tunnel), env setup
 | add a city / district / metro station / region | `frontend/src/data/places.ts` (regions also in the `origin` check in `schema.sql`) |
 | change what hosts fill in | `frontend/src/views/dashboard/ListingFormPage.tsx` (+ column grants in `schema.sql`) |
 | add an API endpoint | `backend/src/routes/`, register in `backend/src/app.ts` |
+| change the logo, favicons or link-preview image | replace `frontend/public/logo.svg` / `logo-with-text.svg` (and edit the preview text in the script), then `node scripts/brand-assets.mjs` from `frontend/`; bump the `?v=` in `app/layout.tsx` |
+| change Google / link-preview titles and descriptions | `meta.*` keys in the i18n files |
 | change prices | `plans` table **and** `PLANS` in `frontend/src/config.ts` |
 | turn paid mode on | SQL: `update app_settings set paywall_enabled = true;` |
 
@@ -102,9 +103,9 @@ scripts/          dev runner (both apps + tunnel), env setup
 
 - **Frontend → Vercel.** Root Directory `frontend`, framework Next.js, region Frankfurt. Variables: the two `NEXT_PUBLIC_SUPABASE_*`, `NEXT_PUBLIC_SITE_URL=https://qoshni.uz`, and `API_URL` = the backend's address.
 - **Backend → any Node host** that keeps a process running (Railway, Render, Fly.io, a VPS), region near Frankfurt. Root `backend`, build `npm install && npm run build`, start `npm start`. Variables: everything in `backend/.env.example`, with the **production** bot. Rate limits are counted in memory, so run one instance.
-- **Supabase:** Authentication → URL Configuration → add `https://qoshni.uz/**`. Google Cloud: add `https://qoshni.uz` as a JS origin; Branding → privacy `/privacy`, terms `/terms`; Audience → In production. The Security Advisor's warning about the `public_listings` view is expected — that view is how the public sees listings without private fields.
+- **Supabase:** the Security Advisor's warning about the `public_listings` view is expected — that view is how the public sees listings without private fields.
 - **Point the production bot at the site** (once, from `backend/`): `TELEGRAM_BOT_TOKEN=… TELEGRAM_WEBHOOK_SECRET=… npm run telegram:webhook -- https://qoshni.uz`
-- **Check:** `https://qoshni.uz/api/health` → `{"ok":true}`; sign in with Google and with a phone; post a room with a photo; share a listing link in Telegram (preview shows photo and price).
+- **Check:** `https://qoshni.uz/api/health` → `{"ok":true}`; sign in with a phone; post a room with a photo; share a listing link in Telegram (preview shows photo and price).
 - **Payments (later):** give Payme `https://qoshni.uz/api/payments/payme` (account field `order_id`); give Click `…/api/payments/click/prepare` and `…/complete`. Set `PAYME_*` / `CLICK_*` on the backend, then turn the paywall on.
 
 **Still open:** lawyer-reviewed legal texts (`content/legal.ts`); Uzbek law wants citizens' personal data stored in Uzbekistan — Supabase can be self-hosted there without code changes.

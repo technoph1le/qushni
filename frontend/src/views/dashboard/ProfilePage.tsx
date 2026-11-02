@@ -39,12 +39,6 @@ export function ProfilePage() {
             <span>{t('prof.name')}</span>
             <input value={name} onChange={(e) => { setName(e.target.value); setSaved(false); }} maxLength={60} required />
           </label>
-          {user.email && (
-            <div className="input">
-              <span>{t('prof.email')}</span>
-              <div className="readonly">{user.email}</div>
-            </div>
-          )}
           <div className="input">
             <span>{t('prof.phone')}</span>
             <div className="readonly">

@@ -2,7 +2,7 @@
 
 Roommate and room finder for Uzbekistan — a **Mir2Dos** product. Hosts post a free room or bed; students, workers and families find a place and contact the host directly. The interface is in Uzbek, Russian and English.
 
-One **Next.js** app: the website and its API (Telegram sign-in, payments) deploy together to **Vercel**, with **Supabase** for the database, file storage and Google sign-in.
+One **Next.js** app: the website and its API (Telegram sign-in, payments) deploy together to **Vercel**, with **Supabase** for the database, file storage and sign-in sessions.
 
 ## Quick start
 
@@ -26,7 +26,7 @@ Browser ──► Next.js on Vercel
               ├─ pages: rendered on the server (listings visible to Google and Telegram previews)
               └─ /api/*: Telegram sign-in, bot webhook, Payme & Click callbacks
    │                     └──► Supabase (secret key) and Telegram Bot API
-   └──► Supabase directly: listings, photos, Google sign-in, contact access rules
+   └──► Supabase directly: listings, photos, sign-in sessions, contact access rules
 ```
 
 **Contact privacy is enforced in the database:** exact addresses and phone numbers can only be read through functions that check the paywall and the user's plan, whatever the website does.
@@ -85,5 +85,5 @@ docs/                        Setup and deployment guides
 
 - Code in `src/server/` and `src/data/server.ts` imports `server-only`, so it can never end up in the browser bundle. Only `NEXT_PUBLIC_*` variables reach the browser; never give a secret that prefix.
 - Only Uzbek (+998) phone numbers can sign up. The website, the API and the database each enforce this.
-- Posting a room requires a confirmed phone number. Google users confirm theirs once in the dashboard.
+- Posting a room requires a confirmed phone number; signing in with a phone confirms it.
 - Hosts never pay. Seekers can always browse for free; paid plans (7 days, 10 days, 1 month) unlock contacts once the paywall is switched on.

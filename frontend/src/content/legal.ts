@@ -35,7 +35,7 @@ export const PRIVACY: Record<Lang, LegalDoc> = {
         heading: 'Data we collect',
         paragraphs: ['We collect only what is needed to run the service:'],
         list: [
-          'Account: your name; your email address and profile photo if you sign in with Google; your phone number, Telegram user ID and Telegram username if you confirm your number through our Telegram bot.',
+          'Account: your name, phone number, Telegram user ID and Telegram username, which you confirm through our Telegram bot.',
           'Listings: everything you add to a listing — text, price, photos, where the people living there are from, and the address and map point if you give them.',
           'Usage: how many times your listing is viewed and how many times its phone number is shown, and which signed-in users opened a listing’s contacts.',
           'Payments (once paid plans launch): the plan, amount and status of your orders. Card details are entered on Payme or Click pages; we never see or store them.',
@@ -59,7 +59,7 @@ export const PRIVACY: Record<Lang, LegalDoc> = {
         heading: 'What other people can see',
         paragraphs: [
           'Anyone can see a listing’s public details, the host’s name, the date they joined and an approximate area of about 500 metres around the home.',
-          'The exact address and the host’s phone number are shown only to people allowed to see contacts: during the free launch period that is every visitor; once paid plans launch, only signed-in users with an active plan. Your email address is never shown to other users.',
+          'The exact address and the host’s phone number are shown only to people allowed to see contacts: during the free launch period that is every visitor; once paid plans launch, only signed-in users with an active plan.',
           'We do not sell personal data and do not use it for third-party advertising.',
         ],
       },
@@ -69,7 +69,6 @@ export const PRIVACY: Record<Lang, LegalDoc> = {
         paragraphs: ['We share data only with providers that help us run the service, and only for that purpose:'],
         list: [
           'Supabase — database, file storage and sign-in (servers in the European Union);',
-          'Google — sign-in with a Google account;',
           'Telegram — delivering phone confirmation codes;',
           'Payme and Click — payments, once paid plans launch;',
           'Vercel and Railway — hosting of the website and server.',
@@ -128,7 +127,7 @@ export const PRIVACY: Record<Lang, LegalDoc> = {
         heading: 'Qanday ma’lumotlarni yig‘amiz',
         paragraphs: ['Biz faqat xizmat ishlashi uchun zarur bo‘lgan ma’lumotlarni yig‘amiz:'],
         list: [
-          'Akkaunt: ismingiz; Google orqali kirsangiz — email manzilingiz va profil rasmingiz; raqamingizni Telegram botimiz orqali tasdiqlasangiz — telefon raqamingiz, Telegram ID va Telegram foydalanuvchi nomingiz.',
+          'Akkaunt: ismingiz, telefon raqamingiz, Telegram ID va Telegram foydalanuvchi nomingiz — raqamingizni Telegram botimiz orqali tasdiqlaysiz.',
           'E’lonlar: e’longa qo‘shgan barcha ma’lumotlar — matn, narx, rasmlar, u yerda yashovchilar qaysi viloyatdan ekani, ko‘rsatsangiz — manzil va xaritadagi nuqta.',
           'Foydalanish: e’loningiz necha marta ko‘rilgani, telefon raqami necha marta ochilgani va qaysi akkauntga kirgan foydalanuvchilar e’lon kontaktlarini ochgani.',
           'To‘lovlar (pullik tariflar ishga tushgach): buyurtmalaringizning tarifi, summasi va holati. Karta ma’lumotlari Payme yoki Click sahifalarida kiritiladi; biz ularni ko‘rmaymiz va saqlamaymiz.',
@@ -152,7 +151,7 @@ export const PRIVACY: Record<Lang, LegalDoc> = {
         heading: 'Boshqalar nimani ko‘radi',
         paragraphs: [
           'E’lonning ochiq ma’lumotlari, uy egasining ismi, ro‘yxatdan o‘tgan sanasi va uy atrofidagi taxminan 500 metrlik hudud hammaga ko‘rinadi.',
-          'Aniq manzil va uy egasining telefon raqami faqat kontaktlarni ko‘rishga ruxsati borlarga ko‘rsatiladi: bepul ishga tushirish davrida — barcha tashrif buyuruvchilarga; pullik tariflar ishga tushgach — faqat faol tarifga ega, akkauntga kirgan foydalanuvchilarga. Email manzilingiz boshqa foydalanuvchilarga hech qachon ko‘rsatilmaydi.',
+          'Aniq manzil va uy egasining telefon raqami faqat kontaktlarni ko‘rishga ruxsati borlarga ko‘rsatiladi: bepul ishga tushirish davrida — barcha tashrif buyuruvchilarga; pullik tariflar ishga tushgach — faqat faol tarifga ega, akkauntga kirgan foydalanuvchilarga.',
           'Biz shaxsiy ma’lumotlarni sotmaymiz va uchinchi tomon reklamasi uchun ishlatmaymiz.',
         ],
       },
@@ -162,7 +161,6 @@ export const PRIVACY: Record<Lang, LegalDoc> = {
         paragraphs: ['Ma’lumotlarni faqat xizmatni ishlatishga yordam beradigan provayderlar bilan va faqat shu maqsadda ulashamiz:'],
         list: [
           'Supabase — ma’lumotlar bazasi, fayllar va kirish tizimi (serverlar Yevropa Ittifoqida);',
-          'Google — Google akkaunti orqali kirish;',
           'Telegram — telefonni tasdiqlash kodlarini yetkazish;',
           'Payme va Click — pullik tariflar ishga tushgach, to‘lovlar;',
           'Vercel va Railway — sayt va server hostingi.',
@@ -221,7 +219,7 @@ export const PRIVACY: Record<Lang, LegalDoc> = {
         heading: 'Какие данные мы собираем',
         paragraphs: ['Мы собираем только то, что нужно для работы сервиса:'],
         list: [
-          'Аккаунт: ваше имя; email и фото профиля, если вы входите через Google; номер телефона, Telegram ID и имя пользователя Telegram, если вы подтверждаете номер через наш Telegram-бот.',
+          'Аккаунт: ваше имя, номер телефона, Telegram ID и имя пользователя Telegram — номер вы подтверждаете через наш Telegram-бот.',
           'Объявления: всё, что вы добавляете в объявление, — текст, цену, фото, откуда люди, которые там живут, а также адрес и точку на карте, если вы их указали.',
           'Использование: сколько раз ваше объявление просмотрели и сколько раз открыли номер телефона, а также какие вошедшие пользователи открыли контакты объявления.',
           'Платежи (после запуска платных тарифов): тариф, сумма и статус заказов. Данные карты вводятся на страницах Payme или Click; мы их не видим и не храним.',
@@ -245,7 +243,7 @@ export const PRIVACY: Record<Lang, LegalDoc> = {
         heading: 'Что видят другие',
         paragraphs: [
           'Всем видны открытые данные объявления, имя хозяина, дата регистрации и примерный район радиусом около 500 метров вокруг жилья.',
-          'Точный адрес и номер телефона хозяина видят только те, кому разрешён доступ к контактам: в бесплатный период запуска — все посетители; после запуска платных тарифов — только вошедшие пользователи с активным тарифом. Ваш email никогда не показывается другим пользователям.',
+          'Точный адрес и номер телефона хозяина видят только те, кому разрешён доступ к контактам: в бесплатный период запуска — все посетители; после запуска платных тарифов — только вошедшие пользователи с активным тарифом.',
           'Мы не продаём персональные данные и не используем их для сторонней рекламы.',
         ],
       },
@@ -255,7 +253,6 @@ export const PRIVACY: Record<Lang, LegalDoc> = {
         paragraphs: ['Мы передаём данные только поставщикам, которые помогают нам обеспечивать работу сервиса, и только для этой цели:'],
         list: [
           'Supabase — база данных, хранение файлов и вход (серверы в Европейском союзе);',
-          'Google — вход через аккаунт Google;',
           'Telegram — доставка кодов подтверждения телефона;',
           'Payme и Click — платежи после запуска платных тарифов;',
           'Vercel и Railway — хостинг сайта и сервера.',

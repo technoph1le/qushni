@@ -10,7 +10,6 @@ import type { Lang } from '../../types';
 export interface AppUser {
   id: string;
   name: string;
-  email: string | null;
   phone: string | null;
   phoneVerified: boolean;
   avatar: string | null;
@@ -27,7 +26,6 @@ interface AuthContext {
   user: AppUser | null;
   access: { paywallOn: boolean; accessUntil: string | null; has: boolean };
   refreshAccess: () => Promise<void>;
-  signInWithGoogle: (next: string) => Promise<void>;
   startPhone: (phone: string, lang: Lang) => Promise<PhoneStart>;
   phoneStatus: (token: string) => Promise<'pending' | 'code_sent' | 'expired'>;
   verifyCode: (token: string, code: string) => Promise<'signed_in' | 'linked'>;
@@ -37,16 +35,12 @@ interface AuthContext {
 
 const Ctx = createContext<AuthContext | null>(null);
 
-// Phone-only accounts get a placeholder email that is never shown.
-const realEmail = (email?: string | null) => (email && !email.endsWith('@users.qoshni.uz') ? email : null);
-
 async function loadProfile(session: Session): Promise<AppUser> {
   const { data } = await supabase!.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
   const meta = session.user.user_metadata ?? {};
   return {
     id: session.user.id,
     name: data?.full_name || meta.full_name || meta.name || '',
-    email: realEmail(session.user.email),
     phone: data?.phone ?? null,
     phoneVerified: data?.phone_verified ?? false,
     avatar: data?.avatar_url ?? meta.avatar_url ?? null,
@@ -105,16 +99,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       access: { paywallOn, accessUntil: valid ? access.accessUntil : null, has: !paywallOn || valid },
       refreshAccess,
-
-      async signInWithGoogle(next) {
-        if (!supabase) return;
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          // Come back to /login so an OAuth error can be shown there; on success it forwards to `next`.
-          options: { redirectTo: `${window.location.origin}/login?next=${encodeURIComponent(next)}` },
-        });
-        if (error) throw error;
-      },
 
       async startPhone(phone, lang) {
         return apiFetch<PhoneStart>('/auth/telegram/start', { body: { phone, lang } });

@@ -5,8 +5,6 @@
 .auth-page__top { width: 100%; max-width: 1360px; display: flex; justify-content: space-between; align-items: center; padding: 16px 0; margin-bottom: 24px; }
 .auth-card { width: min(480px, 100%); background: #fff; border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 36px; display: flex; flex-direction: column; gap: 18px; box-shadow: var(--shadow); }
 .auth-card h1 { font-size: 26px; font-weight: 800; }
-.divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 13px; }
-.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 .form-stack { display: flex; flex-direction: column; gap: 14px; }
 .phone-verify { display: flex; flex-direction: column; gap: 12px; width: 100%; }
 .phone-verify__title { font-size: 17px; color: var(--ink); }

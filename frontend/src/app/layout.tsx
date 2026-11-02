@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Manrope } from 'next/font/google';
 import type { ReactNode } from 'react';
-import { getServerLang } from '../i18n/server';
+import { getServerLang, serverT } from '../i18n/server';
 import { siteUrl } from '../lib/site';
 import { Providers } from './providers';
 import '../styles/index.css';
@@ -13,33 +13,46 @@ const manrope = Manrope({
   display: 'swap',
 });
 
-const description =
-  "Qo'shni — O'zbekistonda ishonchli sherik va xona topish platformasi. Metro va universitetlar yaqinida, vositachisiz.";
+const OG_LOCALE = { uz: 'uz_UZ', ru: 'ru_RU', en: 'en_US' } as const;
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl()),
-  title: { default: "Qo'shni — sherik va xona toping", template: "%s — Qo'shni" },
-  description,
-  applicationName: "Qo'shni",
-  authors: [{ name: 'Mir2Dos' }],
-  openGraph: {
-    type: 'website',
-    siteName: "Qo'shni",
-    title: "Qo'shni — sherik va xona toping",
-    description: 'Metro va universitetlar yaqinidagi xonalar va sheriklar — vositachisiz, komissiyasiz.',
-    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
-  },
-  twitter: { card: 'summary_large_image' },
-  icons: {
-    icon: [
-      // ?v= busts browsers' favicon cache; bump it whenever the icons change.
-      { url: '/favicon.ico?v=2', sizes: '16x16 32x32 48x48' },
-      { url: '/favicon.svg?v=2', type: 'image/svg+xml' },
-    ],
-    apple: '/apple-touch-icon.png?v=2',
-  },
-  manifest: '/site.webmanifest?v=2',
+const ICONS: Metadata['icons'] = {
+  icon: [
+    // ?v= busts browsers' favicon cache; bump it whenever the icons change.
+    { url: '/favicon.ico?v=2', sizes: '16x16 32x32 48x48' },
+    { url: '/favicon.svg?v=2', type: 'image/svg+xml' },
+  ],
+  apple: '/apple-touch-icon.png?v=2',
 };
+
+// In the visitor's language; link-preview bots send no language and get Uzbek.
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await getServerLang();
+  const title = serverT(lang, 'meta.title');
+  const description = serverT(lang, 'meta.description');
+  const images = [{ url: '/og-image.png?v=3', width: 1200, height: 630, alt: serverT(lang, 'meta.ogAlt') }];
+  return {
+    metadataBase: new URL(siteUrl()),
+    title: { default: title, template: "%s — Qo'shni" },
+    description,
+    applicationName: "Qo'shni",
+    authors: [{ name: 'Mir2Dos' }],
+    creator: 'Mir2Dos',
+    formatDetection: { telephone: false },
+    appleWebApp: { title: "Qo'shni" },
+    openGraph: {
+      type: 'website',
+      siteName: "Qo'shni",
+      locale: OG_LOCALE[lang],
+      alternateLocale: Object.values(OG_LOCALE).filter((l) => l !== OG_LOCALE[lang]),
+      title,
+      description,
+      images,
+    },
+    twitter: { card: 'summary_large_image', title, description, images },
+    icons: ICONS,
+    manifest: '/site.webmanifest?v=2',
+  };
+}
 
 export const viewport: Viewport = { themeColor: '#00006E' };
 
