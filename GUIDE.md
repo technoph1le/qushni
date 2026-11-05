@@ -87,7 +87,7 @@ scripts/          dev runner (both apps + tunnel), env setup
 | add a city / district / metro station / region | `frontend/src/data/places.ts` (regions also in the `origin` check in `schema.sql`) |
 | change what hosts fill in | `frontend/src/views/dashboard/ListingFormPage.tsx` (+ column grants in `schema.sql`) |
 | add an API endpoint | `backend/src/routes/`, register in `backend/src/app.ts` |
-| change the logo, favicons or link-preview image | replace `frontend/public/logo.svg` / `logo-with-text.svg` (and edit the preview text in the script), then `node scripts/brand-assets.mjs` from `frontend/`; bump the `?v=` in `app/layout.tsx` |
+| change the logo, favicons or link-preview image | replace `frontend/public/logo.svg` / `logo-with-text.svg` (and edit the preview text in the script), then `node scripts/brand-assets.mjs` from `frontend/`; bump the `?v=` in `app/layout.tsx` and `public/site.webmanifest` |
 | change Google / link-preview titles and descriptions | `meta.*` keys in the i18n files |
 | change prices | `plans` table **and** `PLANS` in `frontend/src/config.ts` |
 | turn paid mode on | SQL: `update app_settings set paywall_enabled = true;` |

@@ -17,11 +17,12 @@ const OG_LOCALE = { uz: 'uz_UZ', ru: 'ru_RU', en: 'en_US' } as const;
 
 const ICONS: Metadata['icons'] = {
   icon: [
-    // ?v= busts browsers' favicon cache; bump it whenever the icons change.
-    { url: '/favicon.ico?v=2', sizes: '16x16 32x32 48x48' },
-    { url: '/favicon.svg?v=2', type: 'image/svg+xml' },
+    // ?v= busts browsers' favicon cache; bump it here and in site.webmanifest whenever the icons change.
+    // sizes="32x32" (not the ICO's full 16/32/48 list) keeps Chrome from preferring the ICO over the SVG.
+    { url: '/favicon.ico?v=3', sizes: '32x32' },
+    { url: '/favicon.svg?v=3', type: 'image/svg+xml' },
   ],
-  apple: '/apple-touch-icon.png?v=2',
+  apple: { url: '/apple-touch-icon.png?v=3', sizes: '180x180', type: 'image/png' },
 };
 
 // In the visitor's language; link-preview bots send no language and get Uzbek.
@@ -50,7 +51,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: { card: 'summary_large_image', title, description, images },
     icons: ICONS,
-    manifest: '/site.webmanifest?v=2',
+    manifest: '/site.webmanifest?v=3',
   };
 }
 

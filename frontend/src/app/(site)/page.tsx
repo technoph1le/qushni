@@ -20,7 +20,7 @@ function structuredData() {
         '@id': `${base}/#org`,
         name: COMPANY.product,
         url: `${base}/`,
-        logo: `${base}/logo.png`,
+        logo: `${base}/icon-512.png`,
         email: COMPANY.email,
         sameAs: [`https://t.me/${COMPANY.telegram}`],
         parentOrganization: { '@type': 'Organization', name: COMPANY.name },
