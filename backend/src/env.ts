@@ -13,7 +13,8 @@ const optional = (key: string) => process.env[key] || '';
 export const env = {
   // The secret key: either the new sb_secret_… (SUPABASE_SECRET_KEY) or the legacy service_role key.
   get supabaseUrl() {
-    return required('SUPABASE_URL');
+    // On Vercel the API runs inside the frontend project, which already has the public URL.
+    return required('SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL');
   },
   get supabaseServiceKey() {
     return required('SUPABASE_SECRET_KEY', 'SUPABASE_SERVICE_ROLE_KEY');

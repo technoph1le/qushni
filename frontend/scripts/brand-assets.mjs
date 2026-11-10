@@ -81,7 +81,7 @@ const text = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1200" h
   <text x="80" y="338" font-size="66" font-weight="800" fill="${NAVY}" letter-spacing="-1">bilan bo'lishing.</text>
   <text x="80" y="398" font-size="28" fill="#4a5163">Viloyatdoshingiz yashayotgan xonalarni toping.</text>
   ${chipSvg}
-  <text x="80" y="574" font-size="24" font-weight="700" fill="#C24A00">qoshni.uz</text>
+  <text x="80" y="574" font-size="24" font-weight="700" fill="#C24A00">qushni.uz</text>
   <rect x="0" y="618" width="780" height="12" fill="${ACCENT}"/>
 </svg>`);
 const og = await sharp({ create: { width: 1200, height: 630, channels: 4, background: '#ffffff' } })

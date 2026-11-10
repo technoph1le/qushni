@@ -1,12 +1,13 @@
 {
   "name": "qoshni-frontend",
   "private": true,
-  "description": "Qo'shni website (Next.js). Calls to /api/* are forwarded to the backend.",
+  "description": "Qo'shni website (Next.js). Also serves the API from ../backend at /api/* (see src/app/api).",
   "scripts": {
     "dev": "next dev -p 5173",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postinstall": "npm install --prefix ../backend --no-audit --no-fund"
   },
   "engines": {
     "node": ">=20.9"

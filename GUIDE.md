@@ -8,13 +8,15 @@ UI in Uzbek (default), Russian and English. This one file is the whole manual; i
 ```
 Browser ──► frontend/ (Next.js, port 5173)
               ├─ pages, rendered on the server (good for Google and Telegram link previews)
-              ├─ /api/*  ──proxy──►  backend/ (Hono on Node, port 8787)
-              │                        Telegram sign-in + bot webhook, Payme & Click callbacks
-              │                        └──► Supabase with the SECRET key, Telegram Bot API
+              ├─ /api/*  ──►  backend/ code (Hono)
+              │                 Telegram sign-in + bot webhook, Payme & Click callbacks
+              │                 └──► Supabase with the SECRET key, Telegram Bot API
               └─ Supabase directly with the PUBLIC key: listings, photos, sign-in sessions
 ```
 
-- Because the frontend proxies `/api/*`, the browser, Telegram and the payment providers only ever call `https://<site>/api/...`. Set `API_URL` on the frontend to wherever the backend runs.
+- The browser, Telegram and the payment providers only ever call `https://<site>/api/...`.
+- **Locally** `API_URL=http://localhost:8787` (in `frontend/.env.local`) makes the site proxy `/api/*` to the separate backend process, so it restarts on its own and logs in its own terminal.
+- **On Vercel** `API_URL` is left unset and the same backend code runs inside the site via `frontend/src/app/api/[...path]/route.ts`. The frontend's `postinstall` installs `backend/`'s packages for this.
 - **Privacy is enforced in the database**, not the UI: other users can't read a listing's address, exact point or the host's phone. They get them only through `get_listing_location` / `reveal_listing_contact`, which check the paywall.
 
 ## Run it locally
@@ -101,11 +103,12 @@ scripts/          dev runner (both apps + tunnel), env setup
 
 ## Deploying
 
-- **Frontend → Vercel.** Root Directory `frontend`, framework Next.js, region Frankfurt. Variables: the two `NEXT_PUBLIC_SUPABASE_*`, `NEXT_PUBLIC_SITE_URL=https://qoshni.uz`, and `API_URL` = the backend's address.
-- **Backend → any Node host** that keeps a process running (Railway, Render, Fly.io, a VPS), region near Frankfurt. Root `backend`, build `npm install && npm run build`, start `npm start`. Variables: everything in `backend/.env.example`, with the **production** bot. Rate limits are counted in memory, so run one instance.
+- **One Vercel project serves the site and the API.** Root Directory `frontend`, framework Next.js, region Frankfurt, and keep "Include files outside the root directory" on (the API code is in `backend/`). Variables: the two `NEXT_PUBLIC_SUPABASE_*`, `NEXT_PUBLIC_SITE_URL=https://qushni.uz`, `SUPABASE_SECRET_KEY` (or `SUPABASE_SERVICE_ROLE_KEY`), `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_WEBHOOK_SECRET` (the **production** bot), and `PAYME_*` / `CLICK_*` once payments start. **No `API_URL`.** Rate limits are counted in memory per serverless instance, so they're looser than on one long-running server.
+- **Make `qushni.uz` the primary domain** (Vercel → Domains, `www` redirects to it). Telegram and the payment providers don't follow redirects.
+- **Separate backend instead (optional):** any Node host (Railway, Render, Fly.io, a VPS). Root `backend`, build `npm install && npm run build`, start `npm start`, variables from `backend/.env.example`; then set `API_URL` on Vercel to its address.
 - **Supabase:** the Security Advisor's warning about the `public_listings` view is expected — that view is how the public sees listings without private fields.
-- **Point the production bot at the site** (once, from `backend/`): `TELEGRAM_BOT_TOKEN=… TELEGRAM_WEBHOOK_SECRET=… npm run telegram:webhook -- https://qoshni.uz`
-- **Check:** `https://qoshni.uz/api/health` → `{"ok":true}`; sign in with a phone; post a room with a photo; share a listing link in Telegram (preview shows photo and price).
-- **Payments (later):** give Payme `https://qoshni.uz/api/payments/payme` (account field `order_id`); give Click `…/api/payments/click/prepare` and `…/complete`. Set `PAYME_*` / `CLICK_*` on the backend, then turn the paywall on.
+- **Point the production bot at the site** (once, from `backend/`): `TELEGRAM_BOT_TOKEN=… TELEGRAM_WEBHOOK_SECRET=… npm run telegram:webhook -- https://qushni.uz`
+- **Check:** `https://qushni.uz/api/health` → `{"ok":true}`; sign in with a phone; post a room with a photo; share a listing link in Telegram (preview shows photo and price).
+- **Payments (later):** give Payme `https://qushni.uz/api/payments/payme` (account field `order_id`); give Click `…/api/payments/click/prepare` and `…/complete`. Set `PAYME_*` / `CLICK_*` on Vercel and redeploy, then turn the paywall on.
 
 **Still open:** lawyer-reviewed legal texts (`content/legal.ts`); Uzbek law wants citizens' personal data stored in Uzbekistan — Supabase can be self-hosted there without code changes.

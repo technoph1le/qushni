@@ -1,4 +1,25 @@
+import path from 'node:path';
 import type { NextConfig } from 'next';
+
+/**
+ * Where to proxy /api/*. Unset (production on Vercel) → the API runs in this app, see
+ * src/app/api/[...path]/route.ts. Pointing it at the site itself would loop, so that is ignored.
+ */
+function apiProxyTarget(): string | null {
+  const raw = process.env.API_URL?.trim().replace(/\/$/, '');
+  if (!raw) return null;
+  const host = (u: string) => {
+    try {
+      return new URL(u).hostname.replace(/^www\./, '');
+    } catch {
+      return '';
+    }
+  };
+  const site = process.env.NEXT_PUBLIC_SITE_URL;
+  const vercel = process.env.VERCEL_URL;
+  if ((site && host(raw) === host(site)) || (vercel && host(raw) === vercel)) return null;
+  return raw;
+}
 
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -12,16 +33,28 @@ const config: NextConfig = {
   poweredByHeader: false,
   // Lets teammates open the dev server through a Cloudflare quick tunnel (npm run dev).
   allowedDevOrigins: ['*.trycloudflare.com'],
-  // The API lives in ../backend. Proxying /api/* keeps one origin: no CORS, and Telegram and the
-  // payment providers can keep calling https://<site>/api/... .
+  // The API code lives in ../backend. It is served at /api/* either by proxying to a separate backend
+  // process (local dev) or by the route handler in this app (Vercel). One origin either way: no CORS,
+  // and Telegram and the payment providers call https://<site>/api/... .
+  experimental: { externalDir: true },
+  outputFileTracingRoot: path.join(__dirname, '..'),
+  webpack(cfg) {
+    // Backend files import each other as './x.js' (Node ESM style). Their packages come from
+    // ../backend/node_modules, which this app's postinstall installs.
+    cfg.resolve.extensionAlias = { '.js': ['.ts', '.js'] };
+    return cfg;
+  },
   async rewrites() {
-    const api = (process.env.API_URL || 'http://localhost:8787').replace(/\/$/, '');
-    return [
-      // Old iOS, Telegram and some bookmark/preview services request these blindly, without reading <head>.
-      { source: '/apple-touch-icon-precomposed.png', destination: '/apple-touch-icon.png' },
-      { source: '/apple-touch-icon-180x180.png', destination: '/apple-touch-icon.png' },
-      { source: '/api/:path*', destination: `${api}/api/:path*` },
-    ];
+    const api = apiProxyTarget();
+    return {
+      beforeFiles: api ? [{ source: '/api/:path*', destination: `${api}/api/:path*` }] : [],
+      afterFiles: [
+        // Old iOS, Telegram and some bookmark/preview services request these blindly, without reading <head>.
+        { source: '/apple-touch-icon-precomposed.png', destination: '/apple-touch-icon.png' },
+        { source: '/apple-touch-icon-180x180.png', destination: '/apple-touch-icon.png' },
+      ],
+      fallback: [],
+    };
   },
   async headers() {
     return [

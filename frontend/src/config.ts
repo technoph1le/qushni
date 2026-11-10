@@ -16,9 +16,9 @@ export const COMPANY = {
   name: 'Mir2Dos',
   product: "Qo'shni",
   city: { uz: 'Toshkent, O‘zbekiston', ru: 'Ташкент, Узбекистан', en: 'Tashkent, Uzbekistan' },
-  email: 'support@qoshni.uz',
+  email: 'support@qushni.uz',
   telegram: 'qoshni_support', // without @
-  website: 'qoshni.uz',
+  website: 'qushni.uz',
 };
 
 /** Date shown on the privacy policy and terms; change it whenever their text changes. */

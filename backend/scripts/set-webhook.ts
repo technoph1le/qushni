@@ -1,4 +1,4 @@
-// Points a Telegram bot at a deployed site: npm run telegram:webhook -- https://qoshni.uz (run in backend/)
+// Points a Telegram bot at a deployed site: npm run telegram:webhook -- https://qushni.uz (run in backend/)
 // Uses TELEGRAM_BOT_TOKEN and TELEGRAM_WEBHOOK_SECRET from backend/.env (or the environment, which wins).
 // Locally you don't need this: `npm run dev` points your dev bot at the tunnel automatically.
 export {};
