@@ -47,6 +47,16 @@ Both are git-ignored; the `.env.example` next to each lists every variable. Join
 1. **Supabase** — new project, region Frankfurt. SQL Editor → run `backend/supabase/schema.sql`. Copy from Project Settings → API Keys: URL, publishable key (frontend), secret key (backend).
 2. **Telegram dev bot** — @BotFather → `/newbot` (e.g. `qoshni_dev_bot`). Token and username go in `backend/.env`; `npm run setup` already generated `TELEGRAM_WEBHOOK_SECRET`. `npm run dev` points the bot at your tunnel automatically.
 
+## AI room matcher
+
+The "Find my room with AI" flow on the home page (it also opens by itself on a visitor's first visit). The seeker answers up to five quick questions — city, home region, who's moving in, budget, anything else in their own words — or types one sentence instead. Every question can be skipped.
+
+- **Frontend:** `frontend/src/features/match/` — `MatchFlow.tsx` (the full-screen questions), `MatchPicks.tsx` (the "Picked for you" block above the results), `api.ts`. Styles in `styles/match.css`, texts under `ai.*` in the i18n files.
+- **Backend:** `POST /api/match` → `backend/src/match/engine.ts`. Simple rules narrow the catalogue to at most 40 rooms; Claude (`claude-opus-5-5`, low effort, structured output) picks up to 6, scores them and writes a one-line reason per room in the visitor's language. It also turns the free-text note into filters, which the home page then applies.
+- **Key:** `CLAUDE_API_KEY` in `backend/.env` locally, and in the Vercel project's environment variables in production (the API runs inside the site there). Without a key, or if a call fails, the same rules rank the rooms and the flow still works, just without the AI wording.
+- **Cost and limits:** one Claude call per search, usually 5–10 seconds. 15 searches per 10 minutes per IP.
+- **Demo data:** `npm run demo:seed` in `backend/` adds 24 sample rooms across every region; `npm run demo:remove` deletes them.
+
 ## The database
 
 Everything is in **`backend/supabase/schema.sql`** — one readable file with a comment on every table (they show in the Supabase dashboard). Helper functions sit in a `private` schema so they don't clutter the API.

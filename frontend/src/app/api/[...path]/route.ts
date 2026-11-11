@@ -5,6 +5,8 @@ import { api } from '../../../../../backend/src/app';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+// The AI matcher waits on a Claude call (usually a few seconds).
+export const maxDuration = 60;
 
 const handle = (req: Request) => api.fetch(req);
 

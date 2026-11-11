@@ -56,3 +56,6 @@ export const env = {
 
 export const paymeEnabled = () => Boolean(env.payme.merchantId && env.payme.key);
 export const clickEnabled = () => Boolean(env.click.serviceId && env.click.merchantId && env.click.secretKey);
+
+/** Claude API key for the "find my room" matcher. Empty → the matcher ranks rooms with simple rules instead. */
+export const claudeApiKey = () => optional('CLAUDE_API_KEY') || optional('ANTHROPIC_API_KEY');

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Icon } from '../components/Icon';
 import { ListingCard } from '../features/listings/ListingCard';
@@ -13,6 +13,12 @@ import { useAuth } from '../features/auth/AuthProvider';
 import { PayModal, PlanOptions } from '../features/payments/Plans';
 import type { Plan } from '../config';
 import { useI18n } from '../i18n';
+import { MatchFlow } from '../features/match/MatchFlow';
+import { MatchPicks } from '../features/match/MatchPicks';
+import { searchFrom, type MatchAnswers, type MatchResult } from '../features/match/api';
+
+// First-time visitors get the matcher straight away; after they've seen it once, it waits in the hero.
+const SEEN_KEY = 'qoshni.match.seen';
 
 export function HomePage({ initialListings }: { initialListings: Listing[] }) {
   const { t, lang, money } = useI18n();
@@ -21,6 +27,28 @@ export function HomePage({ initialListings }: { initialListings: Listing[] }) {
   const [search, setSearch] = useState<SearchState>(DEFAULT_SEARCH);
   const [buying, setBuying] = useState<Plan | null>(null);
   const set = <K extends keyof SearchState>(k: K, v: SearchState[K]) => setSearch((s) => ({ ...s, [k]: v }));
+  const [matching, setMatching] = useState(false);
+  const [answers, setAnswers] = useState<MatchAnswers | undefined>();
+  const [picks, setPicks] = useState<MatchResult | null>(null);
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(SEEN_KEY)) return;
+      localStorage.setItem(SEEN_KEY, '1');
+    } catch {
+      return; // no storage (private mode): don't pop up on every visit
+    }
+    const timer = window.setTimeout(() => setMatching(true), 500);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const onMatched = useCallback((a: MatchAnswers, r: MatchResult | null) => {
+    setMatching(false);
+    setAnswers(a);
+    setPicks(r);
+    setSearch(searchFrom(a, r));
+    window.setTimeout(() => document.getElementById(r ? 'picks' : 'listings')?.scrollIntoView({ behavior: 'smooth' }), 50);
+  }, []);
 
   const { compatriots, others } = useMemo(() => searchListings(listings, search), [listings, search]);
   const region = regionById(search.from);
@@ -32,6 +60,15 @@ export function HomePage({ initialListings }: { initialListings: Listing[] }) {
         <div className="container hero__inner">
           <h1 className="hero__title">{t('hero.title')}</h1>
           <p className="hero__lead">{t('hero.lead')}</p>
+
+          <button className="ai-cta" onClick={() => setMatching(true)}>
+            <span className="ai-cta__icon"><Icon name="sparkle" size={22} /></span>
+            <span className="ai-cta__text">
+              <strong>{t('ai.cta')}</strong>
+              <small>{t('ai.ctaHint')}</small>
+            </span>
+            <Icon name="arrowRight" size={20} className="ai-cta__arrow" />
+          </button>
 
           <form
             className="searchbar"
@@ -77,6 +114,10 @@ export function HomePage({ initialListings }: { initialListings: Listing[] }) {
               ))}
             </Select>
           </div>
+
+          {picks && (
+            <MatchPicks result={picks} listings={listings} onRedo={() => setMatching(true)} onHide={() => setPicks(null)} />
+          )}
 
           {loading ? (
             <div className="empty"><span className="spinner" aria-hidden="true" />{t('common.loading')}</div>
@@ -165,6 +206,9 @@ export function HomePage({ initialListings }: { initialListings: Listing[] }) {
         </div>
       </section>
 
+      {matching && (
+        <MatchFlow roomCount={listings.length} initial={answers} onClose={() => setMatching(false)} onDone={onMatched} />
+      )}
       {buying && <PayModal plan={buying} onClose={() => setBuying(null)} />}
     </>
   );
