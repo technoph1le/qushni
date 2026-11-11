@@ -1,25 +1,29 @@
 export interface Plan {
-  id: '7d' | '10d' | '30d';
+  id: "7d" | "10d" | "30d";
   days: number;
   price: number; // UZS — keep in sync with the `plans` table
   popular?: boolean;
 }
 
 export const PLANS: Plan[] = [
-  { id: '7d', days: 7, price: 29000 },
-  { id: '10d', days: 10, price: 39000 },
-  { id: '30d', days: 30, price: 79000, popular: true },
+  { id: "7d", days: 7, price: 29000 },
+  { id: "10d", days: 10, price: 39000 },
+  { id: "30d", days: 30, price: 79000, popular: true },
 ];
 
 /** Shown in the footer, legal pages and support links. Update before launch. */
 export const COMPANY = {
-  name: 'Mir2Dos',
+  name: "Mir2Dos",
   product: "Qo'shni",
-  city: { uz: 'Toshkent, O‘zbekiston', ru: 'Ташкент, Узбекистан', en: 'Tashkent, Uzbekistan' },
-  email: 'support@qushni.uz',
-  telegram: 'qoshni_support', // without @
-  website: 'qushni.uz',
+  city: {
+    uz: "Toshkent, O‘zbekiston",
+    ru: "Ташкент, Узбекистан",
+    en: "Tashkent, Uzbekistan",
+  },
+  email: "mir2dos@gmail.com",
+  telegram: "mir2dos", // without @
+  website: "qushni.uz",
 };
 
 /** Date shown on the privacy policy and terms; change it whenever their text changes. */
-export const LEGAL_UPDATED = '2026-10-25';
+export const LEGAL_UPDATED = "2026-10-25";
